@@ -1,0 +1,20 @@
+# Dependencies
+**/node_modules/
+
+# Environment variables / secrets
+**/.env
+
+# Backups
+backend_old/
+backend_backup/
+
+# Archives
+*.zip
+
+# Windows / IDE files
+.vs/
+.vscode/
+desktop.ini
+
+# Logs
+npm-debug.log*
