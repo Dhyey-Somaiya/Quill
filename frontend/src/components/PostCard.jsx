@@ -14,6 +14,8 @@ export default function PostCard({
   const [bookmarked, setBookmarked] = useState(isBookmarkedInitial);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
+  const [imageError, setImageError] = useState(false);
+
   const author = post.authorId;
   const category = post.categoryId;
 
@@ -41,9 +43,14 @@ export default function PostCard({
 
   return (
     <article className={`post-card ${featured ? "featured-card" : ""}`}>
-      {post.coverImage && (
+      {post.coverImage && !imageError && (
         <Link to={`/posts/${post._id}`} className="post-image-wrap">
-          <img src={post.coverImage} alt="" className="post-image" />
+          <img
+            src={post.coverImage}
+            alt=""
+            className="post-image"
+            onError={() => setImageError(true)}
+          />
         </Link>
       )}
 
