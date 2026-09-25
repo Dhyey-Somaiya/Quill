@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, Search, PenLine, UserRound, LogOut } from "lucide-react";
+import { Moon, Sun, Search, PenLine, UserRound, Bookmark, LogOut } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,8 +20,13 @@ export default function Navbar() {
           <NavLink to="/" end>
             Home
           </NavLink>
-          <a href="#latest">Latest</a>
-          <a href="#topics">Topics</a>
+          {isAuthenticated && (
+            <NavLink to="/bookmarks">
+              Bookmarks
+            </NavLink>
+          )}
+          <a href="/#latest">Latest</a>
+          <a href="/#topics">Topics</a>
         </nav>
 
         <div className="nav-actions">
@@ -46,6 +51,13 @@ export default function Navbar() {
                 <PenLine size={17} />
                 <span>Write</span>
               </Link>
+              <button
+                className="icon-btn"
+                title="Bookmarks"
+                onClick={() => navigate("/bookmarks")}
+              >
+                <Bookmark size={18} />
+              </button>
               <button
                 className="avatar-btn"
                 title={user?.name || "Profile"}

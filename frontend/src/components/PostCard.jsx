@@ -1,10 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, Heart, MessageCircle, ArrowUpRight } from "lucide-react";
+import { bookmarksApi } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
-export default function PostCard({ post, featured = false }) {
+export default function PostCard({
+  post,
+  featured = false,
+  isBookmarkedInitial = false,
+  onBookmarkToggle,
+}) {
+  const { isAuthenticated, user } = useAuth();
+  const [bookmarked, setBookmarked] = useState(isBookmarkedInitial);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
+
   const author = post.authorId;
   const category = post.categoryId;
+
+  const handleBookmarkClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated || bookmarkBusy) return;
+
+    setBookmarkBusy(true);
+    try {
+      if (bookmarked) {
+        await bookmarksApi.remove(post._id);
+        setBookmarked(false);
+      } else {
+        await bookmarksApi.add(post._id);
+        setBookmarked(true);
+      }
+      if (onBookmarkToggle) onBookmarkToggle(post._id);
+    } catch (err) {
+      console.error("Bookmark error:", err);
+    } finally {
+      setBookmarkBusy(false);
+    }
+  };
 
   return (
     <article className={`post-card ${featured ? "featured-card" : ""}`}>
@@ -40,12 +73,19 @@ export default function PostCard({ post, featured = false }) {
           <span>
             <Heart size={16} /> {post.likes?.length || 0}
           </span>
-          <span>
+          <Link to={`/posts/${post._id}#comments`} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
             <MessageCircle size={16} /> Discuss
-          </span>
-          <span>
-            <Bookmark size={16} />
-          </span>
+          </Link>
+          <button
+            type="button"
+            className={`action-icon-btn ${bookmarked ? "active" : ""}`}
+            onClick={handleBookmarkClick}
+            disabled={!isAuthenticated || bookmarkBusy}
+            title={isAuthenticated ? (bookmarked ? "Remove Bookmark" : "Bookmark") : "Log in to bookmark"}
+            style={{ background: "none", border: 0, cursor: isAuthenticated ? "pointer" : "default", padding: 0 }}
+          >
+            <Bookmark size={16} fill={bookmarked ? "currentColor" : "none"} color={bookmarked ? "var(--accent)" : "currentColor"} />
+          </button>
           <Link
             to={`/posts/${post._id}`}
             className="arrow-link"

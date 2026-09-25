@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PostDetail from "./pages/PostDetail";
+import Write from "./pages/Write";
+import Bookmarks from "./pages/Bookmarks";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -17,6 +19,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/posts/:id" element={<PostDetail />} />
+          <Route path="/posts/:id/edit" element={<Write />} />
+          <Route path="/write" element={<Write />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
