@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const registered = location.state?.registered === true;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -32,6 +33,12 @@ export default function Login() {
         <p className="kicker">Welcome back</p>
         <h1>Continue reading.</h1>
         <p className="auth-subtitle">Sign in to your Quill account.</p>
+
+        {registered && (
+          <div className="success-banner">
+            🎉 Account created! Welcome to Quill — sign in to get started.
+          </div>
+        )}
 
         {error && <div className="error-banner">{error}</div>}
 

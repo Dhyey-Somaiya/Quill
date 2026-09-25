@@ -23,6 +23,8 @@ export default function Write() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [newTagInput, setNewTagInput] = useState("");
+  const [creatingTag, setCreatingTag] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -73,6 +75,32 @@ export default function Write() {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
     );
+  };
+
+  const handleCreateTag = async (e) => {
+    e.preventDefault();
+    const name = newTagInput.trim();
+    if (!name || creatingTag) return;
+    // Check if tag with same name already exists
+    const exists = availableTags.find((t) => t.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      toggleTag(exists._id);
+      setNewTagInput("");
+      return;
+    }
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    setCreatingTag(true);
+    try {
+      const res = await tagsApi.create({ name, slug });
+      const newTag = res.data.tag;
+      setAvailableTags((prev) => [...prev, newTag]);
+      setSelectedTags((prev) => [...prev, newTag._id]);
+      setNewTagInput("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to create tag.");
+    } finally {
+      setCreatingTag(false);
+    }
   };
 
   const handleSubmit = async (targetStatus) => {
@@ -203,29 +231,58 @@ export default function Write() {
           </div>
         </div>
 
-        {availableTags.length > 0 && (
-          <div className="tag-selector">
-            <label>
-              <TagIcon size={14} style={{ display: "inline", marginRight: 4 }} />
-              Select Tags
-            </label>
-            <div className="tag-pills-wrap">
-              {availableTags.map((tag) => {
-                const isSelected = selectedTags.includes(tag._id);
-                return (
-                  <button
-                    type="button"
-                    key={tag._id}
-                    className={`tag-pill-btn ${isSelected ? "selected" : ""}`}
-                    onClick={() => toggleTag(tag._id)}
-                  >
-                    #{tag.name}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="tag-selector">
+          <label>
+            <TagIcon size={14} style={{ display: "inline", marginRight: 4 }} />
+            Tags
+          </label>
+          <div className="tag-pills-wrap">
+            {availableTags.map((tag) => {
+              const isSelected = selectedTags.includes(tag._id);
+              return (
+                <button
+                  type="button"
+                  key={tag._id}
+                  className={`tag-pill-btn ${isSelected ? "selected" : ""}`}
+                  onClick={() => toggleTag(tag._id)}
+                >
+                  #{tag.name}
+                </button>
+              );
+            })}
+            {/* Inline new-tag creation */}
+            <form onSubmit={handleCreateTag} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                placeholder="+ new tag"
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                  border: "1px dashed var(--line)",
+                  background: "transparent",
+                  color: "var(--text)",
+                  fontSize: 12,
+                  width: 100,
+                  outline: "none",
+                }}
+                disabled={creatingTag}
+              />
+              {newTagInput.trim() && (
+                <button
+                  type="submit"
+                  className="tag-pill-btn selected"
+                  disabled={creatingTag}
+                  style={{ padding: "4px 12px" }}
+                >
+                  {creatingTag ? "…" : "Add"}
+                </button>
+              )}
+            </form>
           </div>
-        )}
+        </div>
+
 
         <div className="form-group content-group">
           <textarea

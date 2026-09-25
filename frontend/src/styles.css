@@ -442,6 +442,15 @@ button {
   margin: 18px 0;
   font-size: 13px;
 }
+.success-banner {
+  padding: 13px 15px;
+  border: 1px solid color-mix(in srgb, #48bb78 45%, var(--line));
+  background: color-mix(in srgb, #48bb78 10%, var(--surface));
+  color: var(--text);
+  margin: 18px 0;
+  font-size: 13px;
+  border-radius: 4px;
+}
 .empty-state h3 {
   font-family: var(--serif);
   font-size: 28px;
@@ -897,3 +906,91 @@ button {
   border-color: var(--accent);
 }
 
+/* Drafts page */
+.drafts-page {
+  max-width: 860px;
+  margin: auto;
+  padding: 55px 28px 100px;
+}
+.drafts-page h1 {
+  font-family: var(--serif);
+  font-size: 48px;
+  font-weight: 400;
+  margin: 0 0 8px;
+}
+.drafts-subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 40px;
+}
+.drafts-list {
+  display: grid;
+  gap: 16px;
+}
+.draft-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.draft-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.draft-card-info {
+  min-width: 0;
+}
+.draft-card-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.draft-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.draft-status-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.draft-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.inline-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: color-mix(in srgb, #e53e3e 12%, transparent);
+  color: #e53e3e;
+  border: 1px solid color-mix(in srgb, #e53e3e 28%, transparent);
+  cursor: pointer;
+}
+.inline-danger-btn:hover {
+  background: color-mix(in srgb, #e53e3e 20%, transparent);
+}

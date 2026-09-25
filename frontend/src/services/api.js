@@ -33,6 +33,7 @@ export const categoriesApi = {
 
 export const tagsApi = {
   list: () => api.get("/tags"),
+  create: (payload) => api.post("/tags", payload),
 };
 
 export const commentsApi = {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, Search, PenLine, UserRound, Bookmark, LogOut } from "lucide-react";
+import { Moon, Sun, Search, PenLine, UserRound, Bookmark, LogOut, FilePen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -23,6 +23,11 @@ export default function Navbar() {
           {isAuthenticated && (
             <NavLink to="/bookmarks">
               Bookmarks
+            </NavLink>
+          )}
+          {isAuthenticated && (
+            <NavLink to="/drafts">
+              Drafts
             </NavLink>
           )}
           <a href="/#latest">Latest</a>

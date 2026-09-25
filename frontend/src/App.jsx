@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PostDetail from "./pages/PostDetail";
 import Write from "./pages/Write";
+import Drafts from "./pages/Drafts";
 import Bookmarks from "./pages/Bookmarks";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/posts/:id" element={<PostDetail />} />
           <Route path="/posts/:id/edit" element={<Write />} />
           <Route path="/write" element={<Write />} />
+          <Route path="/drafts" element={<Drafts />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

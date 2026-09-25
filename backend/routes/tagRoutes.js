@@ -6,7 +6,7 @@ const { getTags, createTag, updateTag, deleteTag } = require("../controllers/tag
 const router = express.Router();
 
 router.get("/", getTags);
-router.post("/", protect, requireAdmin, createTag);
+router.post("/", protect, createTag);
 router.put("/:id", protect, requireAdmin, updateTag);
 router.delete("/:id", protect, requireAdmin, deleteTag);
 
