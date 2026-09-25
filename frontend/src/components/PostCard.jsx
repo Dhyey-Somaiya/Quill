@@ -68,10 +68,12 @@ export default function PostCard({
 
         <div className="post-meta">
           <div className="author-mini">
-            <span className="avatar-placeholder">
-              {(author?.name || "Q").slice(0, 1).toUpperCase()}
-            </span>
-            <span>{author?.name || "Quill writer"}</span>
+            <Link to={author?._id ? `/profile/${author._id}` : "#"} style={{ display: "contents" }}>
+              <span className="avatar-placeholder">
+                {(author?.name || "Q").slice(0, 1).toUpperCase()}
+              </span>
+              <span>{author?.name || "Quill writer"}</span>
+            </Link>
           </div>
           <span>{readingTime(post.content)} min read</span>
         </div>

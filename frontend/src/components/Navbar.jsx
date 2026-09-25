@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, Search, PenLine, UserRound, Bookmark, LogOut, FilePen } from "lucide-react";
+import { Moon, Sun, Search, PenLine, UserRound, Bookmark, LogOut, Shield } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -21,13 +21,14 @@ export default function Navbar() {
             Home
           </NavLink>
           {isAuthenticated && (
-            <NavLink to="/bookmarks">
-              Bookmarks
-            </NavLink>
+            <NavLink to="/bookmarks">Bookmarks</NavLink>
           )}
           {isAuthenticated && (
-            <NavLink to="/drafts">
-              Drafts
+            <NavLink to="/drafts">Drafts</NavLink>
+          )}
+          {isAuthenticated && user?.role === "ADMIN" && (
+            <NavLink to="/admin" style={({ isActive }) => ({ color: isActive ? "var(--accent)" : undefined })}>
+              Admin
             </NavLink>
           )}
           <a href="/#latest">Latest</a>
@@ -35,18 +36,10 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <button
-            className="icon-btn"
-            aria-label="Search"
-            onClick={() => navigate("/#search")}
-          >
+          <button className="icon-btn" aria-label="Search" onClick={() => navigate("/#search")}>
             <Search size={18} />
           </button>
-          <button
-            className="icon-btn"
-            aria-label="Toggle theme"
-            onClick={toggleTheme}
-          >
+          <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
             {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
@@ -56,36 +49,29 @@ export default function Navbar() {
                 <PenLine size={17} />
                 <span>Write</span>
               </Link>
-              <button
-                className="icon-btn"
-                title="Bookmarks"
-                onClick={() => navigate("/bookmarks")}
-              >
+              <button className="icon-btn" title="Bookmarks" onClick={() => navigate("/bookmarks")}>
                 <Bookmark size={18} />
               </button>
+              {user?.role === "ADMIN" && (
+                <button className="icon-btn" title="Admin Dashboard" onClick={() => navigate("/admin")}>
+                  <Shield size={18} />
+                </button>
+              )}
               <button
                 className="avatar-btn"
-                title={user?.name || "Profile"}
+                title={user?.name || "My Profile"}
                 onClick={() => navigate("/profile")}
               >
                 <UserRound size={18} />
               </button>
-              <button
-                className="icon-btn mobile-only"
-                onClick={logout}
-                aria-label="Log out"
-              >
+              <button className="icon-btn mobile-only" onClick={logout} aria-label="Log out">
                 <LogOut size={18} />
               </button>
             </>
           ) : (
             <>
-              <Link className="login-link" to="/login">
-                Log in
-              </Link>
-              <Link className="signup-btn" to="/register">
-                Start writing
-              </Link>
+              <Link className="login-link" to="/login">Log in</Link>
+              <Link className="signup-btn" to="/register">Start writing</Link>
             </>
           )}
         </div>

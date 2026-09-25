@@ -49,4 +49,35 @@ export const bookmarksApi = {
   remove: (id) => api.delete(`/users/bookmarks/${id}`),
 };
 
+export const usersApi = {
+  getMe: () => api.get("/users/me"),
+  updateMe: (payload) => api.patch("/users/me", payload),
+  getById: (id) => api.get(`/users/${id}`),
+  follow: (id) => api.post(`/users/${id}/follow`),
+  unfollow: (id) => api.delete(`/users/${id}/follow`),
+  listAll: () => api.get("/users"),
+  toggleStatus: (id, isActive) => api.patch(`/users/${id}/status`, { isActive }),
+};
+
+export const adminApi = {
+  dashboard: () => api.get("/admin/dashboard"),
+};
+
+export const categoryAdminApi = {
+  create: (payload) => api.post("/categories", payload),
+  update: (id, payload) => api.put(`/categories/${id}`, payload),
+  delete: (id) => api.delete(`/categories/${id}`),
+};
+
+export const tagAdminApi = {
+  update: (id, payload) => api.put(`/tags/${id}`, payload),
+  delete: (id) => api.delete(`/tags/${id}`),
+};
+
+export const commentAdminApi = {
+  delete: (id) => api.delete(`/comments/${id}`),
+  approve: (id, isApproved) => api.put(`/comments/${id}`, { isApproved }),
+};
+
 export default api;
+

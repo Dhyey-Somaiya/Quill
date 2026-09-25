@@ -8,6 +8,9 @@ import PostDetail from "./pages/PostDetail";
 import Write from "./pages/Write";
 import Drafts from "./pages/Drafts";
 import Bookmarks from "./pages/Bookmarks";
+import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -24,6 +27,9 @@ export default function App() {
           <Route path="/write" element={<Write />} />
           <Route path="/drafts" element={<Drafts />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id" element={<PublicProfile />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
