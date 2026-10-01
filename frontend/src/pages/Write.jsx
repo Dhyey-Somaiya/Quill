@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Image as ImageIcon, Tag as TagIcon, Save, Send } from "lucide-react";
 import { postsApi, categoriesApi, tagsApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import RichEditor from "../components/RichEditor";
 
 export default function Write() {
   const { id } = useParams(); // If id exists, edit mode
@@ -285,12 +286,10 @@ export default function Write() {
 
 
         <div className="form-group content-group">
-          <textarea
-            className="content-textarea"
-            placeholder="Tell your story..."
+          <RichEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={14}
+            onChange={(newHtml) => setContent(newHtml)}
+            placeholder="Tell your story..."
           />
         </div>
       </div>

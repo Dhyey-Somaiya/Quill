@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { postsApi, commentsApi, bookmarksApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { DetailSkeleton } from "../components/SkeletonLoader";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function PostDetail() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Bookmarks State
   const [bookmarked, setBookmarked] = useState(false);
@@ -76,7 +78,7 @@ export default function PostDetail() {
         setError(
           err.response?.data?.error ||
             err.response?.data?.message ||
-            "Story not found."
+            "Story not found.",
         );
       } finally {
         setLoading(false);
@@ -88,8 +90,8 @@ export default function PostDetail() {
 
   if (loading) {
     return (
-      <div className="reading-shell loading-state">
-        Opening story<span>...</span>
+      <div className="reading-shell">
+        <DetailSkeleton />
       </div>
     );
   }
@@ -99,17 +101,18 @@ export default function PostDetail() {
       <div className="reading-shell">
         <div className="error-banner">{error || "Story not found."}</div>
         <Link className="back-link" to="/">
-          ← Back to stories
+          <ArrowLeft size={16} /> Back to stories
         </Link>
       </div>
     );
   }
 
   const author = post.authorId;
+  const authorId = author?._id || author;
   const isOwnerOrAdmin =
     isAuthenticated &&
     user &&
-    (user.role === "ADMIN" || String(user._id) === String(author?._id || author));
+    (user.role === "ADMIN" || String(user._id) === String(authorId));
 
   const liked =
     user?._id && post.likes?.some((like) => String(like) === String(user._id));
@@ -153,6 +156,13 @@ export default function PostDetail() {
     } finally {
       setBookmarkBusy(false);
     }
+  };
+
+  // Copy Link
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // Delete Post
@@ -250,15 +260,17 @@ export default function PostDetail() {
         <h1>{post.title}</h1>
         <p className="article-dek">{excerpt(post.content)}</p>
         <div className="article-meta">
-          <span className="avatar-placeholder large">
-            {(author?.name || "Q").slice(0, 1).toUpperCase()}
-          </span>
-          <div>
-            <strong>{author?.name || "Quill writer"}</strong>
-            <span>
-              {readingTime(post.content)} min read · {post.views || 0} views
+          <Link to={authorId ? `/profile/${authorId}` : "#"} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", color: "inherit" }}>
+            <span className="avatar-placeholder large">
+              {(author?.name || "Q").slice(0, 1).toUpperCase()}
             </span>
-          </div>
+            <div>
+              <strong style={{ display: "block" }}>{author?.name || "Quill writer"}</strong>
+              <span>
+                {readingTime(post.content)} min read · {post.views || 0} views
+              </span>
+            </div>
+          </Link>
         </div>
       </header>
 
@@ -296,15 +308,19 @@ export default function PostDetail() {
           >
             <Bookmark size={19} fill={bookmarked ? "currentColor" : "none"} />
           </button>
-          <button onClick={() => navigator.clipboard.writeText(window.location.href)} title="Copy link">
-            <Share2 size={19} />
+          <button onClick={handleCopyLink} title={copied ? "Link Copied!" : "Copy link"}>
+            {copied ? <Check size={19} style={{ color: "var(--accent)" }} /> : <Share2 size={19} />}
           </button>
         </aside>
 
         <div className="article-content">
-          {post.content.split(/\n\s*\n/).map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
+          {/<[a-z][\s\S]*>/i.test(post.content) ? (
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          ) : (
+            post.content.split(/\n\s*\n/).map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))
+          )}
 
           {/* TAGS DISPLAY */}
           {Array.isArray(post.tags) && post.tags.length > 0 && (
@@ -378,10 +394,11 @@ export default function PostDetail() {
               <div className="comments-list" style={{ display: "grid", gap: 20 }}>
                 {comments.map((comment) => {
                   const commentAuthor = comment.userId;
+                  const commAuthorId = commentAuthor?._id || commentAuthor;
                   const isCommentOwnerOrAdmin =
                     user &&
                     (user.role === "ADMIN" ||
-                      String(user._id) === String(commentAuthor?._id || commentAuthor));
+                      String(user._id) === String(commAuthorId));
 
                   return (
                     <div
@@ -395,12 +412,14 @@ export default function PostDetail() {
                       }}
                     >
                       <div className="comment-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <div className="author-mini">
-                          <span className="avatar-placeholder">
-                            {(commentAuthor?.name || "U").slice(0, 1).toUpperCase()}
-                          </span>
-                          <strong style={{ fontSize: 13 }}>{commentAuthor?.name || "Reader"}</strong>
-                        </div>
+                        <Link to={commAuthorId ? `/profile/${commAuthorId}` : "#"} style={{ display: "contents" }}>
+                          <div className="author-mini">
+                            <span className="avatar-placeholder">
+                              {(commentAuthor?.name || "U").slice(0, 1).toUpperCase()}
+                            </span>
+                            <strong style={{ fontSize: 13 }}>{commentAuthor?.name || "Reader"}</strong>
+                          </div>
+                        </Link>
 
                         {isCommentOwnerOrAdmin && (
                           <div className="comment-actions" style={{ display: "flex", gap: 8 }}>
@@ -481,10 +500,12 @@ export default function PostDetail() {
 }
 
 function excerpt(text = "") {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   return clean.length > 180 ? `${clean.slice(0, 180)}…` : clean;
 }
 
 function readingTime(text = "") {
-  return Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
+  const clean = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const wordCount = clean ? clean.split(/\s+/).length : 0;
+  return Math.max(1, Math.ceil(wordCount / 200));
 }

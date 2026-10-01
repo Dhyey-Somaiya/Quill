@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-
-import { Search, ArrowRight } from "lucide-react";
-
+import { Search, ArrowRight, Sparkles } from "lucide-react";
 import { postsApi, categoriesApi } from "../services/api";
-
 import PostCard from "../components/PostCard";
+import { PostCardSkeleton, FeaturedPostSkeleton } from "../components/SkeletonLoader";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -81,7 +79,6 @@ export default function Home() {
   const loadCategories = async () => {
     try {
       const res = await categoriesApi.list();
-
       setCategories(res.data?.categories || []);
     } catch (err) {
       console.error("Could not load categories:", err);
@@ -105,7 +102,6 @@ export default function Home() {
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
     setPage(1);
-
     loadPosts(search, categoryId, 1, false);
   };
 
@@ -114,7 +110,6 @@ export default function Home() {
     if (page >= totalPages || loadingMore) {
       return;
     }
-
     loadPosts(search, selectedCategory, page + 1, true);
   };
 
@@ -140,7 +135,9 @@ export default function Home() {
       {/* HERO */}
       <section className="hero">
         <div>
-          <p className="kicker">A place for ideas</p>
+          <p className="kicker">
+            <Sparkles size={14} className="kicker-icon" /> A place for ideas
+          </p>
 
           <h1>
             Read something
@@ -168,17 +165,43 @@ export default function Home() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search stories..."
+            placeholder="Search stories by title, topic, or tag..."
             aria-label="Search stories"
           />
 
-          <button type="submit">
+          <button type="submit" aria-label="Submit search">
             <ArrowRight size={18} />
           </button>
         </form>
       </section>
 
-      {/* STORIES */}
+      {/* CATEGORIES / TOPICS BAR */}
+      <section className="topics-section" id="topics">
+        <div className="topic-pills">
+          {/* ALL */}
+          <button
+            type="button"
+            className={!selectedCategory ? "active" : ""}
+            onClick={() => handleCategoryChange("")}
+          >
+            All Stories
+          </button>
+
+          {/* REAL DATABASE CATEGORIES */}
+          {categories.map((category) => (
+            <button
+              type="button"
+              key={category._id}
+              className={selectedCategory === category._id ? "active" : ""}
+              onClick={() => handleCategoryChange(category._id)}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* STORIES FEED */}
       <section className="feed-section" id="latest">
         <div className="section-heading">
           <div>
@@ -191,22 +214,37 @@ export default function Home() {
           </span>
         </div>
 
-        {/* LOADING */}
+        {/* SKELETON LOADING STATE */}
         {loading && (
-          <div className="loading-state">
-            Loading stories<span>...</span>
+          <div className="feed-loading-skeletons">
+            <FeaturedPostSkeleton />
+            <div className="post-grid">
+              <PostCardSkeleton />
+              <PostCardSkeleton />
+              <PostCardSkeleton />
+            </div>
           </div>
         )}
 
-        {/* ERROR */}
+        {/* ERROR STATE */}
         {error && <div className="error-banner">{error}</div>}
 
-        {/* EMPTY */}
+        {/* EMPTY STATE */}
         {!loading && !error && posts.length === 0 && (
           <div className="empty-state">
-            <h3>No stories found.</h3>
-
-            <p>Try another search or choose a different category.</p>
+            <div className="empty-icon">✍️</div>
+            <h3>No stories found</h3>
+            <p>Try refining your search terms or selecting another category.</p>
+            <button
+              type="button"
+              className="accent-btn"
+              onClick={() => {
+                setSearch("");
+                handleCategoryChange("");
+              }}
+            >
+              Reset Filters
+            </button>
           </div>
         )}
 
@@ -217,13 +255,12 @@ export default function Home() {
 
             <div className="featured-note">
               <span className="big-mark">“</span>
-
               <p>Good writing doesn't demand attention. It earns it.</p>
             </div>
           </div>
         )}
 
-        {/* OTHER STORIES */}
+        {/* OTHER STORIES GRID */}
         {!loading && !error && rest.length > 0 && (
           <div className="post-grid">
             {rest.map((post) => (
@@ -232,7 +269,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* LOAD MORE */}
+        {/* LOAD MORE BUTTON */}
         {!loading && !error && page < totalPages && (
           <div className="load-more-wrapper">
             <button
@@ -241,48 +278,11 @@ export default function Home() {
               onClick={handleLoadMore}
               disabled={loadingMore}
             >
-              {loadingMore ? "Loading..." : "Load more stories"}
-
+              {loadingMore ? "Loading more stories..." : "Load more stories"}
               {!loadingMore && <ArrowRight size={16} />}
             </button>
           </div>
         )}
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="topics-section" id="topics">
-        <div className="section-heading">
-          <div>
-            <p className="kicker">Go deeper</p>
-
-            <h2>Explore your interests</h2>
-          </div>
-        </div>
-
-        <div className="topic-pills">
-          {/* ALL */}
-          <button
-            type="button"
-            className={!selectedCategory ? "active" : ""}
-            onClick={() => handleCategoryChange("")}
-          >
-            All
-            <ArrowRight size={15} />
-          </button>
-
-          {/* REAL DATABASE CATEGORIES */}
-          {categories.map((category) => (
-            <button
-              type="button"
-              key={category._id}
-              className={selectedCategory === category._id ? "active" : ""}
-              onClick={() => handleCategoryChange(category._id)}
-            >
-              {category.name}
-              <ArrowRight size={15} />
-            </button>
-          ))}
-        </div>
       </section>
     </div>
   );
