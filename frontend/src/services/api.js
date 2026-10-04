@@ -33,6 +33,7 @@ export const categoriesApi = {
 
 export const tagsApi = {
   list: () => api.get("/tags"),
+  listWithCounts: () => api.get("/tags/with-counts"),
   create: (payload) => api.post("/tags", payload),
 };
 
@@ -72,6 +73,7 @@ export const categoryAdminApi = {
 export const tagAdminApi = {
   update: (id, payload) => api.put(`/tags/${id}`, payload),
   delete: (id) => api.delete(`/tags/${id}`),
+  merge: (payload) => api.post("/tags/merge", payload),
 };
 
 export const commentAdminApi = {

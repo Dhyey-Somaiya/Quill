@@ -83,6 +83,10 @@ export default function Admin() {
   const [newTagName, setNewTagName] = useState("");
   const [addingTag, setAddingTag] = useState(false);
 
+  const [mergeSourceId, setMergeSourceId] = useState("");
+  const [mergeTargetId, setMergeTargetId] = useState("");
+  const [mergingTag, setMergingTag] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated || user?.role !== "ADMIN") {
@@ -102,7 +106,7 @@ export default function Admin() {
         postsApi.list({ limit: 50 }),
         commentsApi.list(undefined),
         categoriesApi.list(),
-        tagsApi.list(),
+        tagsApi.listWithCounts(),
       ]);
       setStats(statsRes.data);
       setUsers(usersRes.data?.users || []);
@@ -214,6 +218,30 @@ export default function Admin() {
       setTags((prev) => prev.filter((t) => t._id !== tagId));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete tag.");
+    }
+  };
+
+  const handleMergeTags = async (e) => {
+    e.preventDefault();
+    if (!mergeSourceId || !mergeTargetId || mergeSourceId === mergeTargetId) return;
+    if (!window.confirm("Are you sure you want to merge these tags? This cannot be undone.")) return;
+    
+    setMergingTag(true);
+    try {
+      await tagAdminApi.merge({ sourceTagId: mergeSourceId, targetTagId: mergeTargetId });
+      setTags((prev) => {
+        const source = prev.find(t => t._id === mergeSourceId);
+        return prev.filter(t => t._id !== mergeSourceId).map(t => 
+          t._id === mergeTargetId ? { ...t, postCount: (t.postCount || 0) + (source?.postCount || 0) } : t
+        );
+      });
+      setMergeSourceId("");
+      setMergeTargetId("");
+      alert("Tags merged successfully!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to merge tags.");
+    } finally {
+      setMergingTag(false);
     }
   };
 
@@ -565,11 +593,32 @@ export default function Admin() {
               </form>
             </div>
 
+            <div className="admin-card" style={{ marginTop: 24, marginBottom: 24 }}>
+              <SectionHead icon={Tag} title="Merge Tags" subtitle="Move posts from one tag to another and delete the old tag" />
+              <form onSubmit={handleMergeTags} style={{ display: "flex", gap: 12, marginTop: 16, alignItems: "center" }}>
+                <select className="admin-input" value={mergeSourceId} onChange={e => setMergeSourceId(e.target.value)} required>
+                  <option value="">Select source tag...</option>
+                  {tags.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                </select>
+                <span className="muted">➔</span>
+                <select className="admin-input" value={mergeTargetId} onChange={e => setMergeTargetId(e.target.value)} required>
+                  <option value="">Select target tag...</option>
+                  {tags.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                </select>
+                <button type="submit" className="primary-btn" disabled={mergingTag || !mergeSourceId || !mergeTargetId || mergeSourceId === mergeTargetId}>
+                  {mergingTag ? "Merging..." : "Merge Tags"}
+                </button>
+              </form>
+            </div>
+
             <div className="admin-card">
               <div className="tag-pills-wrap" style={{ padding: 20 }}>
                 {tags.map((tag) => (
                   <div key={tag._id} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", border: "1px solid var(--line)", borderRadius: 999, fontSize: 13, background: "var(--bg)" }}>
                     <span>#{tag.name}</span>
+                    {tag.postCount !== undefined && (
+                      <span style={{ fontSize: 11, color: "var(--muted)", background: "var(--surface)", padding: "2px 6px", borderRadius: 10 }}>{tag.postCount}</span>
+                    )}
                     <button
                       onClick={() => handleDeleteTag(tag._id)}
                       style={{ background: "none", border: 0, cursor: "pointer", color: "#e53e3e", display: "flex", alignItems: "center", padding: 0 }}

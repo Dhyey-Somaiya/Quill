@@ -4,6 +4,13 @@ const Category = require("../models/Category");
 const Tag = require("../models/Tag");
 const Comment = require("../models/Comment");
 const User = require("../models/User");
+const { sanitizeContent } = require("../utils/sanitize");
+
+const MAX_TAGS_PER_POST = 5;
+
+// Simple in-memory cache for view deduplication (cleared every hour)
+const viewedPosts = new Map();
+setInterval(() => viewedPosts.clear(), 60 * 60 * 1000);
 
 const getPosts = async (req, res) => {
   try {
@@ -24,12 +31,26 @@ const getPosts = async (req, res) => {
       if (!mongoose.isValidObjectId(authorId)) return res.status(400).json({ message: "Invalid authorId" });
       filter.authorId = authorId;
     }
-    if (status) {
-      if (!["DRAFT", "PUBLISHED"].includes(status)) return res.status(400).json({ message: "Invalid status" });
-      filter.status = status;
+
+    // Draft privacy enforcement:
+    // - DRAFT posts can only be fetched by their author or an admin
+    // - Public requests always see only PUBLISHED posts
+    if (status === "DRAFT") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required to view drafts" });
+      }
+      filter.status = "DRAFT";
+      // Non-admin users can only see their own drafts
+      if (req.user.role !== "ADMIN") {
+        filter.authorId = req.user.id;
+      }
+    } else if (status === "PUBLISHED") {
+      filter.status = "PUBLISHED";
     } else {
+      // Default: only published posts
       filter.status = "PUBLISHED";
     }
+
     if (search && search.trim()) {
       const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
@@ -76,8 +97,14 @@ const getPostById = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    post.views += 1;
-    await post.save();
+    const viewerId = req.user ? req.user.id : (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'anonymous');
+    const viewKey = `${post._id}_${viewerId}`;
+
+    if (!viewedPosts.has(viewKey)) {
+      await Post.updateOne({ _id: post._id }, { $inc: { views: 1 } });
+      post.views += 1;
+      viewedPosts.set(viewKey, true);
+    }
     res.status(200).json({ post });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch post", error: error.message });
@@ -95,18 +122,27 @@ const createPost = async (req, res) => {
     if (!["DRAFT", "PUBLISHED"].includes(status)) return res.status(400).json({ message: "Invalid status" });
     if (!Array.isArray(tags)) return res.status(400).json({ message: "tags must be an array" });
 
+    const uniqueTags = [...new Set(tags.map(String))];
+
+    // Enforce max tags per post
+    if (uniqueTags.length > MAX_TAGS_PER_POST) {
+      return res.status(400).json({ message: `A post can have at most ${MAX_TAGS_PER_POST} tags` });
+    }
+
     const categoryExists = await Category.exists({ _id: categoryId });
     if (!categoryExists) return res.status(400).json({ message: "Category not found" });
 
-    const uniqueTags = [...new Set(tags.map(String))];
     if (uniqueTags.some((id) => !mongoose.isValidObjectId(id))) return res.status(400).json({ message: "Invalid tag ID" });
     if (uniqueTags.length && await Tag.countDocuments({ _id: { $in: uniqueTags } }) !== uniqueTags.length) {
       return res.status(400).json({ message: "One or more tags not found" });
     }
 
+    // Sanitize HTML content server-side
+    const sanitizedContent = sanitizeContent(content);
+
     const post = await Post.create({
       title: title.trim(),
-      content,
+      content: sanitizedContent,
       authorId: req.user.id,
       categoryId,
       tags: uniqueTags,
@@ -141,11 +177,22 @@ const updatePost = async (req, res) => {
 
     if (!Array.isArray(post.tags)) return res.status(400).json({ message: "tags must be an array" });
     post.tags = [...new Set(post.tags.map(String))];
+
+    // Enforce max tags per post
+    if (post.tags.length > MAX_TAGS_PER_POST) {
+      return res.status(400).json({ message: `A post can have at most ${MAX_TAGS_PER_POST} tags` });
+    }
+
     if (post.tags.some((id) => !mongoose.isValidObjectId(id))) return res.status(400).json({ message: "Invalid tag ID" });
     if (post.tags.length && await Tag.countDocuments({ _id: { $in: post.tags } }) !== post.tags.length) {
       return res.status(400).json({ message: "One or more tags not found" });
     }
     if (!["DRAFT", "PUBLISHED"].includes(post.status)) return res.status(400).json({ message: "Invalid status" });
+
+    // Sanitize HTML content server-side
+    if (req.body.content !== undefined) {
+      post.content = sanitizeContent(post.content);
+    }
 
     post.updatedAt = new Date();
     await post.save();

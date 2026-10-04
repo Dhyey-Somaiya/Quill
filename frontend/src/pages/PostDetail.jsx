@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { postsApi, commentsApi, bookmarksApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import DOMPurify from "dompurify";
 import { DetailSkeleton } from "../components/SkeletonLoader";
 
 export default function PostDetail() {
@@ -42,6 +43,11 @@ export default function PostDetail() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentContent, setEditingCommentContent] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyContent, setReplyContent] = useState("");
+
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [toc, setToc] = useState([]);
 
   useEffect(() => {
     const fetchPostAndComments = async () => {
@@ -158,6 +164,44 @@ export default function PostDetail() {
     }
   };
 
+  // Scroll progress listener
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTotal = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollTotal > 0) {
+        const currentProgress = (window.scrollY / scrollTotal) * 100;
+        setReadingProgress(currentProgress);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Generate HTML with IDs for TOC
+  const contentWithIds = React.useMemo(() => {
+    if (!post?.content) return "";
+    const sanitized = DOMPurify.sanitize(post.content);
+    
+    // Parse to create TOC
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(sanitized, "text/html");
+    const headings = Array.from(doc.querySelectorAll("h1, h2, h3"));
+    
+    headings.forEach((h, i) => {
+      if (!h.id) h.id = `heading-${i}`;
+    });
+
+    // Extract TOC structure
+    const parsedToc = headings.map(h => ({
+      text: h.textContent,
+      id: h.id,
+      level: parseInt(h.tagName[1])
+    }));
+    setToc(parsedToc);
+    
+    return doc.body.innerHTML;
+  }, [post?.content]);
+
   // Copy Link
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -196,6 +240,27 @@ export default function PostDetail() {
     }
   };
 
+  const handleReplySubmit = async (e, parentId) => {
+    e.preventDefault();
+    if (!replyContent.trim() || commentSubmitting) return;
+
+    setCommentSubmitting(true);
+    try {
+      const res = await commentsApi.create({ postId: id, content: replyContent.trim(), parentCommentId: parentId });
+      setComments((prev) => 
+        prev.map(c => 
+          c._id === parentId ? { ...c, replies: [...(c.replies || []), res.data.comment] } : c
+        )
+      );
+      setReplyingTo(null);
+      setReplyContent("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to add reply.");
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
   const handleUpdateComment = async (commentId) => {
     if (!editingCommentContent.trim()) return;
     try {
@@ -214,7 +279,15 @@ export default function PostDetail() {
     if (!window.confirm("Delete this comment?")) return;
     try {
       await commentsApi.delete(commentId);
-      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      setComments((prev) => {
+        // Filter out if it's top-level
+        const filtered = prev.filter((c) => c._id !== commentId);
+        // Filter out if it's a nested reply
+        return filtered.map(c => ({
+          ...c,
+          replies: c.replies ? c.replies.filter(r => r._id !== commentId) : []
+        }));
+      });
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete comment.");
     }
@@ -222,6 +295,9 @@ export default function PostDetail() {
 
   return (
     <article className="reading-shell">
+      {/* Reading Progress Bar */}
+      <div style={{ position: "fixed", top: 0, left: 0, height: 4, background: "var(--accent)", width: `${readingProgress}%`, zIndex: 1000, transition: "width 0.1s ease-out" }} />
+      
       <div className="top-nav-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Link className="back-link" to="/" style={{ marginBottom: 0 }}>
           <ArrowLeft size={16} /> Back to stories
@@ -314,8 +390,23 @@ export default function PostDetail() {
         </aside>
 
         <div className="article-content">
+          {toc.length > 0 && (
+            <div className="table-of-contents" style={{ background: "var(--surface)", padding: 20, borderRadius: 8, marginBottom: 30, border: "1px solid var(--line)" }}>
+              <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Table of Contents</h3>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {toc.map(item => (
+                  <li key={item.id} style={{ marginLeft: (item.level - 1) * 16 }}>
+                    <a href={`#${item.id}`} style={{ color: "var(--text)", textDecoration: "none", fontSize: 14 }}>
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/<[a-z][\s\S]*>/i.test(post.content) ? (
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div dangerouslySetInnerHTML={{ __html: contentWithIds }} />
           ) : (
             post.content.split(/\n\s*\n/).map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
@@ -487,6 +578,79 @@ export default function PostDetail() {
                           {comment.content}
                         </p>
                       )}
+
+                      {isAuthenticated && (
+                        <button
+                          onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                          style={{ background: "none", border: 0, color: "var(--muted)", cursor: "pointer", fontSize: 13, marginTop: 10, display: "flex", gap: 4, alignItems: "center" }}
+                        >
+                          <MessageCircle size={14} /> {replyingTo === comment._id ? "Cancel Reply" : "Reply"}
+                        </button>
+                      )}
+
+                      {replyingTo === comment._id && (
+                        <form onSubmit={(e) => handleReplySubmit(e, comment._id)} style={{ marginTop: 12 }}>
+                          <textarea
+                            placeholder="Write a reply..."
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            rows={2}
+                            style={{
+                              width: "100%",
+                              padding: 10,
+                              borderRadius: 4,
+                              border: "1px solid var(--line)",
+                              background: "var(--bg)",
+                              color: "var(--text)",
+                            }}
+                          />
+                          <button
+                            type="submit"
+                            disabled={commentSubmitting || !replyContent.trim()}
+                            className="primary-btn"
+                            style={{ marginTop: 8, padding: "6px 12px", fontSize: 13 }}
+                          >
+                            Post Reply
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Render Replies */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div style={{ marginTop: 16, borderLeft: "2px solid var(--line)", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                          {comment.replies.map((reply) => {
+                            const replyAuthor = reply.userId;
+                            const rAuthorId = replyAuthor?._id || replyAuthor;
+                            const isReplyOwnerOrAdmin = user && (user.role === "ADMIN" || String(user._id) === String(rAuthorId));
+
+                            return (
+                              <div key={reply._id} style={{ background: "var(--bg)", padding: 12, borderRadius: 6 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                  <Link to={rAuthorId ? `/profile/${rAuthorId}` : "#"} style={{ display: "contents" }}>
+                                    <div className="author-mini" style={{ gap: 6 }}>
+                                      <span className="avatar-placeholder" style={{ width: 20, height: 20, fontSize: 10 }}>
+                                        {(replyAuthor?.name || "U").slice(0, 1).toUpperCase()}
+                                      </span>
+                                      <strong style={{ fontSize: 12 }}>{replyAuthor?.name || "Reader"}</strong>
+                                    </div>
+                                  </Link>
+                                  {isReplyOwnerOrAdmin && (
+                                    <button
+                                      onClick={() => handleDeleteComment(reply._id)}
+                                      style={{ background: "none", border: 0, color: "#e53e3e", cursor: "pointer" }}
+                                      title="Delete reply"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                                <p style={{ margin: 0, fontSize: 14 }}>{reply.content}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
                     </div>
                   );
                 })}

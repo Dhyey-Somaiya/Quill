@@ -2,6 +2,8 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const MIN_PASSWORD_LENGTH = 8;
+
 // Register
 const registerUser = async (req, res) => {
   try {
@@ -12,6 +14,24 @@ const registerUser = async (req, res) => {
       return res.status(400).json({
         message: "Name, email and password are required",
       });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Validate password strength
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({
+        message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      });
+    }
+
+    // Validate name length
+    if (name.trim().length < 2) {
+      return res.status(400).json({ message: "Name must be at least 2 characters" });
     }
 
     // Check if user already exists
@@ -28,7 +48,7 @@ const registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      name,
+      name: name.trim(),
       email,
       password: hashedPassword,
       bio: bio || "",
@@ -58,8 +78,8 @@ const changePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: "Current password and new password are required" });
     }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: "New password must be at least 8 characters" });
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ message: `New password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
 
     const user = await User.findById(req.user.id);

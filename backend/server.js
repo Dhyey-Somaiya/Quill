@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const validateEnv = require("./utils/validateEnv");
+validateEnv();
+
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -10,6 +13,8 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const tagRoutes = require("./routes/tagRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const globalErrorHandler = require("./middleware/errorMiddleware");
+const AppError = require("./utils/AppError");
 
 const app = express();
 app.use(cors());
@@ -26,6 +31,12 @@ app.use("/api/v1/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.json({ message: "Quill Backend API is running" });
 });
+
+app.use((req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 

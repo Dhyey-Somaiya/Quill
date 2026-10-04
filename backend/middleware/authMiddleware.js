@@ -24,4 +24,30 @@ const protect = async (req, res, next) => {
   }
 };
 
+/**
+ * Optional auth middleware — attaches req.user if a valid token is present,
+ * but does NOT fail if no token is provided. Used for public endpoints
+ * that need to behave differently for authenticated users (e.g. viewing drafts).
+ */
+const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next();
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("_id role isActive");
+
+    if (user && user.isActive) {
+      req.user = { id: user._id.toString(), role: user.role };
+    }
+  } catch {
+    // Token invalid or expired — silently continue as unauthenticated
+  }
+  next();
+};
+
 module.exports = protect;
+module.exports.optionalAuth = optionalAuth;

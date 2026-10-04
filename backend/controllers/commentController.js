@@ -15,7 +15,34 @@ const getComments = async (req, res) => {
     const comments = await Comment.find(filter)
       .populate("userId", "name bio")
       .sort({ createdAt: -1 });
-    res.status(200).json({ count: comments.length, comments });
+
+    // Build threaded structure: separate top-level from replies
+    const topLevel = [];
+    const repliesMap = {}; // parentCommentId -> [replies]
+
+    for (const comment of comments) {
+      const c = comment.toObject();
+      c.replies = [];
+      if (c.parentCommentId) {
+        const parentId = c.parentCommentId.toString();
+        if (!repliesMap[parentId]) repliesMap[parentId] = [];
+        repliesMap[parentId].push(c);
+      } else {
+        topLevel.push(c);
+      }
+    }
+
+    // Attach replies to their parent comments
+    for (const comment of topLevel) {
+      comment.replies = (repliesMap[comment._id.toString()] || []).sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+    }
+
+    // Sort top-level by newest first
+    topLevel.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.status(200).json({ count: comments.length, comments: topLevel });
   } catch (error) {
     res.status(400).json({ message: "Failed to fetch comments", error: error.message });
   }
@@ -23,14 +50,34 @@ const getComments = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const { postId, content } = req.body;
+    const { postId, content, parentCommentId } = req.body;
     if (!postId || !content?.trim()) return res.status(400).json({ message: "postId and content are required" });
     if (!mongoose.isValidObjectId(postId)) return res.status(400).json({ message: "Invalid postId" });
 
     const post = await Post.findOne({ _id: postId, status: "PUBLISHED" });
     if (!post) return res.status(404).json({ message: "Published post not found" });
 
-    const comment = await Comment.create({ postId, userId: req.user.id, content: content.trim() });
+    // Validate parent comment if replying
+    if (parentCommentId) {
+      if (!mongoose.isValidObjectId(parentCommentId)) {
+        return res.status(400).json({ message: "Invalid parentCommentId" });
+      }
+      const parentComment = await Comment.findById(parentCommentId);
+      if (!parentComment) {
+        return res.status(404).json({ message: "Parent comment not found" });
+      }
+      // Parent comment must belong to the same post
+      if (parentComment.postId.toString() !== postId) {
+        return res.status(400).json({ message: "Parent comment belongs to a different post" });
+      }
+    }
+
+    const comment = await Comment.create({
+      postId,
+      userId: req.user.id,
+      content: content.trim(),
+      parentCommentId: parentCommentId || null,
+    });
     const populated = await Comment.findById(comment._id).populate("userId", "name bio");
     res.status(201).json({ message: "Comment created successfully", comment: populated });
   } catch (error) {
@@ -74,6 +121,8 @@ const deleteComment = async (req, res) => {
     const isAdmin = req.user.role === "ADMIN";
     if (!isOwner && !isAdmin) return res.status(403).json({ message: "You are not allowed to delete this comment" });
 
+    // Also delete any replies to this comment
+    await Comment.deleteMany({ parentCommentId: comment._id });
     await comment.deleteOne();
     res.status(200).json({ message: "Comment deleted successfully", comment });
   } catch (error) {

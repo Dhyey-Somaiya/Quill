@@ -26,6 +26,8 @@ export default function Write() {
   const [error, setError] = useState("");
   const [newTagInput, setNewTagInput] = useState("");
   const [creatingTag, setCreatingTag] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [autosaving, setAutosaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -60,6 +62,24 @@ export default function Write() {
           if (Array.isArray(post.tags)) {
             setSelectedTags(post.tags.map((t) => (typeof t === "object" ? t._id : t)));
           }
+        } else {
+          const backup = localStorage.getItem("quill_draft_backup");
+          if (backup) {
+            try {
+              const parsed = JSON.parse(backup);
+              if (window.confirm("You have an unsaved draft. Would you like to restore it?")) {
+                setTitle(parsed.title || "");
+                setContent(parsed.content || "");
+                if (parsed.categoryId) setCategoryId(parsed.categoryId);
+                if (parsed.tags) setSelectedTags(parsed.tags);
+                if (parsed.coverImage) setCoverImage(parsed.coverImage);
+              } else {
+                localStorage.removeItem("quill_draft_backup");
+              }
+            } catch (e) {
+              localStorage.removeItem("quill_draft_backup");
+            }
+          }
         }
       } catch (err) {
         console.error("Error loading editor data:", err);
@@ -73,9 +93,14 @@ export default function Write() {
   }, [id, isAuthenticated, authLoading]);
 
   const toggleTag = (tagId) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
-    );
+    setSelectedTags((prev) => {
+      if (prev.includes(tagId)) return prev.filter((t) => t !== tagId);
+      if (prev.length >= 5) {
+        alert("You can only select up to 5 tags.");
+        return prev;
+      }
+      return [...prev, tagId];
+    });
   };
 
   const handleCreateTag = async (e) => {
@@ -137,10 +162,12 @@ export default function Write() {
         const res = await postsApi.create(payload);
         const newPost = res.data.post;
         if (targetStatus === "PUBLISHED" && newPost?._id) {
+          localStorage.removeItem("quill_draft_backup");
           navigate(`/posts/${newPost._id}`);
           return;
         }
       }
+      localStorage.removeItem("quill_draft_backup");
       navigate("/");
     } catch (err) {
       console.error("Failed to save post:", err);
@@ -151,6 +178,50 @@ export default function Write() {
       setSubmitting(false);
     }
   };
+
+  // LocalStorage backup on change (only for new drafts)
+  useEffect(() => {
+    if (!isEditing && (title || content)) {
+      const backup = { title, content, categoryId, tags: selectedTags, coverImage };
+      localStorage.setItem("quill_draft_backup", JSON.stringify(backup));
+    }
+  }, [title, content, categoryId, selectedTags, coverImage, isEditing]);
+
+  // Debounced Autosave (only for existing drafts)
+  useEffect(() => {
+    if (!isEditing || !title || !content || !categoryId) return;
+    
+    const timeoutId = setTimeout(async () => {
+      setAutosaving(true);
+      try {
+        const payload = { title, content, categoryId, tags: selectedTags, coverImage, status: "DRAFT" };
+        await postsApi.update(id, payload);
+        setLastSaved(new Date());
+      } catch (err) {
+        console.error("Autosave failed", err);
+      } finally {
+        setAutosaving(false);
+      }
+    }, 5000); // 5 seconds debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [title, content, categoryId, selectedTags, coverImage, isEditing, id]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSubmit("DRAFT");
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit("PUBLISHED");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSubmit]);
 
   if (loading) {
     return (
@@ -169,6 +240,11 @@ export default function Write() {
       <div className="editor-header">
         <h1>{isEditing ? "Edit Story" : "Write a Story"}</h1>
         <div className="editor-actions">
+          {isEditing && (
+            <span style={{ fontSize: 12, color: "var(--muted)", display: "inline-flex", alignItems: "center" }}>
+              {autosaving ? "Saving..." : lastSaved ? `Saved ${lastSaved.toLocaleTimeString()}` : "Draft"}
+            </span>
+          )}
           <button
             type="button"
             className="secondary-btn"

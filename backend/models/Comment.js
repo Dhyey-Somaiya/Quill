@@ -5,6 +5,7 @@ const commentSchema = new mongoose.Schema(
     postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true, index: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     content: { type: String, required: true, trim: true, maxlength: 2000 },
+    parentCommentId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null, index: true },
     isApproved: { type: Boolean, default: true, index: true },
     createdAt: { type: Date, default: Date.now, index: true },
     updatedAt: { type: Date, default: Date.now },
