@@ -48,6 +48,7 @@ export default function PostDetail() {
 
   const [readingProgress, setReadingProgress] = useState(0);
   const [toc, setToc] = useState([]);
+  const [contentWithIds, setContentWithIds] = useState("");
 
   useEffect(() => {
     const fetchPostAndComments = async () => {
@@ -93,6 +94,57 @@ export default function PostDetail() {
 
     fetchPostAndComments();
   }, [id, isAuthenticated]);
+
+  // Scroll progress listener
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTotal = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollTotal > 0) {
+        const currentProgress = (window.scrollY / scrollTotal) * 100;
+        setReadingProgress(currentProgress);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Generate HTML with IDs for TOC safely in a useEffect
+  useEffect(() => {
+    if (!post?.content) {
+      setContentWithIds("");
+      setToc([]);
+      return;
+    }
+
+    try {
+      // Allow style attributes and data URIs so pasted images retain their styling & display
+      const sanitized = DOMPurify.sanitize(post.content, { 
+        ADD_ATTR: ['style', 'target', 'src', 'alt', 'class', 'loading'], 
+        ADD_TAGS: ['iframe', 'figure', 'figcaption', 'img'],
+        ADD_DATA_URI_TAGS: ['img']
+      });
+      
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(sanitized, "text/html");
+      const headings = Array.from(doc.querySelectorAll("h1, h2, h3"));
+      
+      headings.forEach((h, i) => {
+        if (!h.id) h.id = `heading-${i}`;
+      });
+
+      const parsedToc = headings.map(h => ({
+        text: h.textContent,
+        id: h.id,
+        level: parseInt(h.tagName[1])
+      }));
+      
+      setToc(parsedToc);
+      setContentWithIds(doc.body.innerHTML);
+    } catch (e) {
+      console.error("Error parsing content:", e);
+      setContentWithIds(post.content); // Fallback
+    }
+  }, [post?.content]);
 
   if (loading) {
     return (
@@ -164,49 +216,33 @@ export default function PostDetail() {
     }
   };
 
-  // Scroll progress listener
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTotal = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      if (scrollTotal > 0) {
-        const currentProgress = (window.scrollY / scrollTotal) * 100;
-        setReadingProgress(currentProgress);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Generate HTML with IDs for TOC
-  const contentWithIds = React.useMemo(() => {
-    if (!post?.content) return "";
-    const sanitized = DOMPurify.sanitize(post.content);
-    
-    // Parse to create TOC
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(sanitized, "text/html");
-    const headings = Array.from(doc.querySelectorAll("h1, h2, h3"));
-    
-    headings.forEach((h, i) => {
-      if (!h.id) h.id = `heading-${i}`;
-    });
-
-    // Extract TOC structure
-    const parsedToc = headings.map(h => ({
-      text: h.textContent,
-      id: h.id,
-      level: parseInt(h.tagName[1])
-    }));
-    setToc(parsedToc);
-    
-    return doc.body.innerHTML;
-  }, [post?.content]);
-
   // Copy Link
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+  const handleCopyLink = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(window.location.href);
+      } else {
+        const dummy = document.createElement("input");
+        dummy.value = window.location.href;
+        document.body.appendChild(dummy);
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+      }
+    } catch (err) {
+      try {
+        const dummy = document.createElement("input");
+        dummy.value = window.location.href;
+        document.body.appendChild(dummy);
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+      } catch (e) {
+        console.error("Failed to copy link:", e);
+      }
+    }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   // Delete Post
@@ -659,17 +695,27 @@ export default function PostDetail() {
           </section>
         </div>
       </div>
+
+      {/* Toast Notification for Copied Link */}
+      {copied && (
+        <div className="toast-notification" role="status" aria-live="polite">
+          <Check size={16} />
+          <span>Link copied to clipboard!</span>
+        </div>
+      )}
     </article>
   );
 }
 
 function excerpt(text = "") {
-  const clean = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const clean = String(text).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   return clean.length > 180 ? `${clean.slice(0, 180)}…` : clean;
 }
 
 function readingTime(text = "") {
-  const clean = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!text) return 1;
+  const clean = String(text).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   const wordCount = clean ? clean.split(/\s+/).length : 0;
   return Math.max(1, Math.ceil(wordCount / 200));
 }

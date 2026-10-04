@@ -109,7 +109,8 @@ export default function PostCard({
 }
 
 function excerpt(text = "") {
-  const clean = text
+  if (!text) return "";
+  const clean = String(text)
     .replace(/<[^>]*>/g, " ")
     .replace(/[#*_>`]/g, "")
     .replace(/\s+/g, " ")
@@ -118,7 +119,8 @@ function excerpt(text = "") {
 }
 
 function readingTime(text = "") {
-  const clean = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!text) return 1;
+  const clean = String(text).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   const wordCount = clean ? clean.split(/\s+/).length : 0;
   return Math.max(1, Math.ceil(wordCount / 200));
 }

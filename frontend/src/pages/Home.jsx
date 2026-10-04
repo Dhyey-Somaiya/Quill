@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Search, ArrowRight, Sparkles } from "lucide-react";
 import { postsApi, categoriesApi } from "../services/api";
 import PostCard from "../components/PostCard";
 import { PostCardSkeleton, FeaturedPostSkeleton } from "../components/SkeletonLoader";
+import { getDailyQuote } from "../data/quotes";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -18,6 +19,8 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const [error, setError] = useState("");
+
+  const dailyQuote = useMemo(() => getDailyQuote(), []);
 
   // Load posts from backend
   const loadPosts = async (
@@ -255,7 +258,10 @@ export default function Home() {
 
             <div className="featured-note">
               <span className="big-mark">“</span>
-              <p>Good writing doesn't demand attention. It earns it.</p>
+              <p>{dailyQuote.text}</p>
+              {dailyQuote.author && (
+                <span className="featured-quote-author">— {dailyQuote.author}</span>
+              )}
             </div>
           </div>
         )}

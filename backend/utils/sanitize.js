@@ -23,17 +23,19 @@ function sanitizeContent(dirty) {
     ],
     allowedAttributes: {
       a: ["href", "target", "rel", "title"],
-      img: ["src", "alt", "title", "loading", "width", "height"],
+      img: ["src", "alt", "title", "loading", "width", "height", "style", "class"],
       figure: ["class"],
       figcaption: ["contenteditable", "placeholder"],
       code: ["class"],
       pre: ["class"],
       span: ["class", "style"],
-      div: ["class"],
+      div: ["class", "style"],
+      p: ["class", "style"],
       td: ["colspan", "rowspan"],
       th: ["colspan", "rowspan"],
     },
-    allowedSchemes: ["http", "https", "mailto"],
+    allowedSchemes: ["http", "https", "mailto", "data"],
+    allowedSchemesAppliedToAttributes: ["href", "src", "cite"],
     // Force safe link attributes
     transformTags: {
       a: (tagName, attribs) => ({
@@ -45,11 +47,17 @@ function sanitizeContent(dirty) {
         },
       }),
     },
-    // Strip all event handlers (onclick, onerror, etc.)
+    // Safe styles
     allowedStyles: {
-      span: {
-        color: [/^#[0-9a-fA-F]{3,6}$/],
-        "background-color": [/^#[0-9a-fA-F]{3,6}$/],
+      "*": {
+        color: [/^#[0-9a-fA-F]{3,6}$/, /^rgb\(/, /^rgba\(/],
+        "background-color": [/^#[0-9a-fA-F]{3,6}$/, /^rgb\(/, /^rgba\(/],
+        "max-width": [/.*/],
+        "border-radius": [/.*/],
+        margin: [/.*/],
+        display: [/.*/],
+        width: [/.*/],
+        height: [/.*/],
       },
     },
   });
