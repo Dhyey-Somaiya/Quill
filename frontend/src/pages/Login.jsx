@@ -1,10 +1,9 @@
-import React from "react";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -12,6 +11,64 @@ export default function Login() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const registered = location.state?.registered === true;
+
+  const googleButtonRef = useRef(null);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  useEffect(() => {
+    const initializeGoogle = () => {
+      if (!window.google || !googleButtonRef.current) return;
+
+      console.log("Google Client ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          setError("");
+          setGoogleBusy(true);
+
+          try {
+            await googleLogin(response.credential);
+            navigate(location.state?.from || "/");
+          } catch (err) {
+            setError(
+              err.response?.data?.message || "Google sign-in failed.",
+            );
+          } finally {
+            setGoogleBusy(false);
+          }
+        },
+      });
+
+      googleButtonRef.current.innerHTML = "";
+
+      window.google.accounts.id.renderButton(
+        googleButtonRef.current,
+        {
+          theme: "outline",
+          size: "large",
+          width: 320,
+          text: "continue_with",
+        },
+      );
+    };
+
+    if (window.google) {
+      initializeGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGoogle;
+    document.head.appendChild(script);
+
+    return () => {
+      script.onload = null;
+    };
+  }, [googleLogin, navigate, location.state]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -65,6 +122,18 @@ export default function Login() {
             {busy ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+
+        <div className="google-login">
+          <div ref={googleButtonRef}></div>
+
+          {googleBusy && (
+            <p className="auth-loading">Signing in with Google...</p>
+          )}
+        </div>
 
         <p className="auth-footer">
           New to Quill? <Link to="/register">Create an account</Link>

@@ -1,3 +1,7 @@
+const { OAuth2Client } = require("google-auth-library");
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -109,9 +113,9 @@ const loginUser = async (req, res) => {
     // Find user
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user.password) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        message: "This account uses Google sign-in. Please continue with Google.",
       });
     }
 
@@ -161,8 +165,100 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Google Login
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        message: "Google credential is required",
+      });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload) {
+      return res.status(401).json({
+        message: "Invalid Google token",
+      });
+    }
+
+    const { sub: googleId, email, name, picture, email_verified } = payload;
+
+    if (!email || !email_verified) {
+      return res.status(401).json({
+        message: "Google account email could not be verified",
+      });
+    }
+
+    let user = await User.findOne({
+      $or: [{ googleId }, { email }],
+    });
+
+    if (user && !user.isActive) {
+      return res.status(403).json({
+        message: "Account is inactive",
+      });
+    }
+
+    if (!user) {
+      user = await User.create({
+        name: name || "Google User",
+        email,
+        googleId,
+        password: undefined,
+      });
+    } else if (!user.googleId) {
+      // Existing Quill account with the same verified Google email.
+      // Link the Google identity to that account.
+      user.googleId = googleId;
+
+      if (name && !user.name) {
+        user.name = name;
+      }
+
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
+    );
+
+    return res.status(200).json({
+      message: "Google login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+
+    return res.status(401).json({
+      message: "Google authentication failed",
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   changePassword,
+  googleLogin,
 };

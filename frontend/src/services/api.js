@@ -14,6 +14,7 @@ api.interceptors.request.use((config) => {
 export const authApi = {
   register: (payload) => api.post("/auth/register", payload),
   login: (payload) => api.post("/auth/login", payload),
+  googleLogin: (credential) => api.post("/auth/google", { credential }),
   me: () => api.get("/users/me"),
 };
 

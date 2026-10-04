@@ -4,7 +4,12 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
-    password: { type: String, required: true },
+    password: { type: String, required: false },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     bio: { type: String, default: "", maxlength: 500 },
     role: { type: String, enum: ["USER", "ADMIN"], default: "USER", index: true },
     isActive: { type: Boolean, default: true, index: true },

@@ -51,6 +51,16 @@ export function AuthProvider({ children }) {
     return nextUser;
   };
 
+  const googleLogin = async (credential) => {
+    const res = await authApi.googleLogin(credential);
+    const { token: nextToken, user: nextUser } = res.data;
+    localStorage.setItem("quill_token", nextToken);
+    localStorage.setItem("quill_user", JSON.stringify(nextUser));
+    setToken(nextToken);
+    setUser(nextUser);
+    return nextUser;
+  };
+
   const register = async (payload) => {
     const res = await authApi.register(payload);
     return res.data;
@@ -70,6 +80,7 @@ export function AuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(token),
       login,
+      googleLogin,
       register,
       logout,
     }),
