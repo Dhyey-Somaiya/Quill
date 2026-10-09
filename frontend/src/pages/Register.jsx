@@ -1,18 +1,18 @@
-import React from "react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const { register } = useAuth();
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     bio: "",
   });
   const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,13 +23,35 @@ export default function Register() {
     setBusy(true);
     try {
       await register(form);
-      navigate("/login", { state: { registered: true } });
+      setDone(true);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setBusy(false);
     }
   };
+
+  if (done) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <p className="kicker">Almost there</p>
+          <h1>Check your email.</h1>
+          <p className="auth-subtitle">
+            We sent a verification link to <strong>{form.email}</strong>.
+            Click it to activate your Quill account.
+          </p>
+          <p className="auth-footer">
+            Didn't get it?{" "}
+            <Link to="/resend-verification">Resend verification email</Link>
+          </p>
+          <p className="auth-footer">
+            <Link to="/login">Back to sign in</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">
@@ -50,6 +72,19 @@ export default function Register() {
           <label>
             Name
             <input name="name" value={form.name} onChange={update} required />
+          </label>
+          <label>
+            Username
+            <input
+              name="username"
+              value={form.username}
+              onChange={update}
+              required
+              minLength={2}
+              maxLength={30}
+              placeholder="e.g. johndoe"
+              autoComplete="username"
+            />
           </label>
           <label>
             Email

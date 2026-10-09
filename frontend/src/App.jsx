@@ -13,6 +13,10 @@ import Profile from "./pages/Profile";
 import PublicProfile from "./pages/PublicProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResendVerification from "./pages/ResendVerification";
 
 export default function App() {
   return (
@@ -23,6 +27,10 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/resend-verification" element={<ResendVerification />} />
           <Route path="/posts/:id" element={<PostDetail />} />
           <Route
             path="/posts/:id/edit"

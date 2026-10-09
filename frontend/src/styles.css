@@ -457,6 +457,7 @@ button {
   color: var(--text);
   margin: 18px 0;
   font-size: 13px;
+  border-radius: 4px;
 }
 .success-banner {
   padding: 13px 15px;
@@ -466,6 +467,11 @@ button {
   margin: 18px 0;
   font-size: 13px;
   border-radius: 4px;
+}
+.inline-link {
+  color: inherit;
+  text-decoration: underline;
+  font-weight: 600;
 }
 .empty-state h3 {
   font-family: var(--serif);
@@ -524,6 +530,39 @@ button {
 }
 .auth-form input:focus,
 .auth-form textarea:focus {
+  border-color: var(--accent);
+}
+.password-field {
+  display: grid;
+  gap: 7px;
+}
+.password-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+}
+.password-label-row a {
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px;
+  transition: color 0.15s;
+}
+.password-label-row a:hover {
+  color: var(--accent);
+}
+.password-field input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  padding: 13px 14px;
+  border-radius: 2px;
+}
+.password-field input:focus {
   border-color: var(--accent);
 }
 .optional {

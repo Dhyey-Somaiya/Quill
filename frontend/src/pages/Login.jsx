@@ -9,8 +9,8 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [busy, setBusy] = useState(false);
-  const registered = location.state?.registered === true;
 
   const googleButtonRef = useRef(null);
   const [googleBusy, setGoogleBusy] = useState(false);
@@ -19,12 +19,11 @@ export default function Login() {
     const initializeGoogle = () => {
       if (!window.google || !googleButtonRef.current) return;
 
-      console.log("Google Client ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
-
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: async (response) => {
           setError("");
+          setUnverifiedEmail("");
           setGoogleBusy(true);
 
           try {
@@ -42,15 +41,12 @@ export default function Login() {
 
       googleButtonRef.current.innerHTML = "";
 
-      window.google.accounts.id.renderButton(
-        googleButtonRef.current,
-        {
-          theme: "outline",
-          size: "large",
-          width: 320,
-          text: "continue_with",
-        },
-      );
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: 320,
+        text: "continue_with",
+      });
     };
 
     if (window.google) {
@@ -73,12 +69,19 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    setUnverifiedEmail("");
     setBusy(true);
     try {
       await login(email, password);
       navigate(location.state?.from || "/");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed.");
+      const code = err.response?.data?.code;
+      const msg = err.response?.data?.message || "Login failed.";
+      if (code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(email);
+      } else {
+        setError(msg);
+      }
     } finally {
       setBusy(false);
     }
@@ -91,13 +94,20 @@ export default function Login() {
         <h1>Continue reading.</h1>
         <p className="auth-subtitle">Sign in to your Quill account.</p>
 
-        {registered && (
-          <div className="success-banner">
-            🎉 Account created! Welcome to Quill — sign in to get started.
+        {error && <div className="error-banner">{error}</div>}
+
+        {unverifiedEmail && (
+          <div className="error-banner">
+            Please verify your email before logging in.{" "}
+            <Link
+              to="/resend-verification"
+              state={{ email: unverifiedEmail }}
+              className="inline-link"
+            >
+              Resend verification email
+            </Link>
           </div>
         )}
-
-        {error && <div className="error-banner">{error}</div>}
 
         <form onSubmit={submit} className="auth-form">
           <label>
@@ -109,15 +119,19 @@ export default function Login() {
               required
             />
           </label>
-          <label>
-            Password
+          <div className="password-field">
+            <div className="password-label-row">
+              <label htmlFor="password">Password</label>
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </label>
+          </div>
           <button className="primary-btn" disabled={busy}>
             {busy ? "Signing in..." : "Sign in"}
           </button>
@@ -129,7 +143,6 @@ export default function Login() {
 
         <div className="google-login">
           <div ref={googleButtonRef}></div>
-
           {googleBusy && (
             <p className="auth-loading">Signing in with Google...</p>
           )}

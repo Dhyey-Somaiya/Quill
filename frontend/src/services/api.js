@@ -15,6 +15,12 @@ export const authApi = {
   register: (payload) => api.post("/auth/register", payload),
   login: (payload) => api.post("/auth/login", payload),
   googleLogin: (credential) => api.post("/auth/google", { credential }),
+  verifyEmail: (token) => api.get(`/auth/verify-email?token=${token}`),
+  resendVerification: (email) =>
+    api.post("/auth/resend-verification", { email }),
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+  resetPassword: (token, newPassword) =>
+    api.post("/auth/reset-password", { token, newPassword }),
   me: () => api.get("/users/me"),
 };
 

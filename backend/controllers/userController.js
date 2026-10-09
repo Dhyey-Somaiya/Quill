@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Post = require("../models/Post");
 
-const publicFields = "-password";
+const publicFields = "-passwordHash";
 
 const getUsers = async (req, res) => {
   try {
