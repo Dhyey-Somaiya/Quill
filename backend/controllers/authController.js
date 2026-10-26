@@ -40,7 +40,7 @@ const hashToken = (raw) =>
 const generateSecureToken = () => crypto.randomBytes(32).toString("hex");
 
 const frontendUrl = () =>
-  process.env.FRONTEND_URL || "http://localhost:5173";
+  (process.env.FRONTEND_URL || "http://localhost:5173").trim().replace(/\/+$/, "");
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 

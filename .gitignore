@@ -1,8 +1,11 @@
-# Dependencies
+# Dependencies & build outputs
 **/node_modules/
+**/dist/
 
 # Environment variables / secrets
 **/.env
+**/.env.*
+!**/.env.example
 
 # Backups
 backend_old/
