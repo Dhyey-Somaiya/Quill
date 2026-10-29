@@ -26,15 +26,15 @@ export default function Footer() {
         <nav className="footer-nav-col" aria-label="Explore">
           <h3 className="footer-col-heading">Explore</h3>
           <ul>
-            <li><Link to="/">Home</Link></li>
+            <li><Link to="/home">Home</Link></li>
             <li>
               <a
-                href="/#latest"
+                href="/home#latest"
                 onClick={(e) => {
                   e.preventDefault();
                   const el = document.getElementById("latest");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
-                  else window.location.href = "/#latest";
+                  else window.location.href = "/home#latest";
                 }}
               >
                 Latest Stories
@@ -42,12 +42,12 @@ export default function Footer() {
             </li>
             <li>
               <a
-                href="/#topics"
+                href="/home#topics"
                 onClick={(e) => {
                   e.preventDefault();
                   const el = document.getElementById("topics");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
-                  else window.location.href = "/#topics";
+                  else window.location.href = "/home#topics";
                 }}
               >
                 Topics

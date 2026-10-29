@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { usersApi, postsApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { ProfileSkeleton } from "../components/SkeletonLoader";
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -76,14 +77,14 @@ export default function PublicProfile() {
   };
 
   if (loading) {
-    return <div className="reading-shell loading-state">Loading profile<span>...</span></div>;
+    return <ProfileSkeleton />;
   }
 
   if (error || !author) {
     return (
       <div className="reading-shell">
         <div className="error-banner">{error || "User not found."}</div>
-        <Link to="/" className="back-link">← Back to stories</Link>
+        <Link to="/home" className="back-link">← Back to stories</Link>
       </div>
     );
   }

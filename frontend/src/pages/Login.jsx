@@ -28,7 +28,7 @@ export default function Login() {
 
           try {
             await googleLogin(response.credential);
-            navigate(location.state?.from || "/");
+            navigate(location.state?.from || "/home");
           } catch (err) {
             setError(
               err.response?.data?.message || "Google sign-in failed.",
@@ -73,7 +73,7 @@ export default function Login() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate(location.state?.from || "/");
+      navigate(location.state?.from || "/home");
     } catch (err) {
       const code = err.response?.data?.code;
       const msg = err.response?.data?.message || "Login failed.";

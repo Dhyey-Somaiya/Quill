@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight, Sparkles, BookOpen, PenLine } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const VALUES = [
   {
@@ -25,11 +27,25 @@ const VALUES = [
 ];
 
 export default function About() {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <div className="about-page">
       {/* ── Hero ── */}
       <section className="about-hero">
-        <p className="kicker">Our story</p>
+        <p className="kicker">
+          <Sparkles size={14} className="kicker-icon" /> Welcome to Quill
+        </p>
+
+        {isAuthenticated && (
+          <div className="about-user-pill">
+            <span>Welcome back, <strong>{user?.name || "Writer"}</strong>!</span>
+            <Link to="/home" className="about-user-pill-link">
+              Go to stories feed <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
+
         <h1>
           A home for<br />
           <em>thoughtful writing.</em>
@@ -38,6 +54,17 @@ export default function About() {
           Quill is an independent publishing platform built for writers who
           care about their craft and readers who value substance over spectacle.
         </p>
+
+        <div className="about-hero-actions">
+          <Link to="/home" className="primary-btn about-hero-btn">
+            <BookOpen size={16} />
+            Explore stories
+          </Link>
+          <Link to={isAuthenticated ? "/write" : "/register"} className="secondary-btn about-hero-btn">
+            <PenLine size={16} />
+            {isAuthenticated ? "Write a story" : "Start writing"}
+          </Link>
+        </div>
       </section>
 
       {/* ── Mission ── */}
@@ -47,7 +74,7 @@ export default function About() {
             <h2>Why Quill exists</h2>
             <p>
               The web is full of content. What it lacks is writing — deliberate,
-              unhurried, human writing that earns the reader's time. Quill was
+              unhurried, human writing that earns the reader&apos;s time. Quill was
               created to give that kind of writing a proper home.
             </p>
             <p>
@@ -62,7 +89,7 @@ export default function About() {
             </p>
           </div>
           <div className="about-accent-block">
-            <span className="about-big-q">"</span>
+            <span className="about-big-q">&ldquo;</span>
             <blockquote>
               Great writing deserves an audience. Great readers deserve something
               worth their time. Quill brings them together.
@@ -106,8 +133,8 @@ export default function About() {
               <li>Category &amp; tag system for discoverability</li>
               <li>Reader engagement through likes and comments</li>
             </ul>
-            <Link to="/register" className="primary-btn about-cta-btn">
-              Start writing for free
+            <Link to={isAuthenticated ? "/write" : "/register"} className="primary-btn about-cta-btn">
+              {isAuthenticated ? "Write a story" : "Start writing for free"}
             </Link>
           </div>
           <div>
@@ -126,7 +153,7 @@ export default function About() {
               <li>Light and dark reading modes</li>
               <li>Clean, typographically beautiful articles</li>
             </ul>
-            <Link to="/" className="secondary-btn about-cta-btn">
+            <Link to="/home" className="secondary-btn about-cta-btn">
               Explore stories
             </Link>
           </div>
@@ -136,10 +163,13 @@ export default function About() {
       {/* ── CTA ── */}
       <section className="about-section about-cta-section">
         <div className="about-section-inner about-cta-inner">
-          <h2>Ready to join Quill?</h2>
-          <p>Create a free account and publish your first story in minutes.</p>
+          <h2>Ready to dive into Quill?</h2>
+          <p>Read thoughtful stories or publish your first article today.</p>
           <div className="about-cta-actions">
-            <Link to="/register" className="primary-btn">Create free account</Link>
+            <Link to="/home" className="primary-btn">Explore stories</Link>
+            {!isAuthenticated && (
+              <Link to="/register" className="secondary-btn">Create free account</Link>
+            )}
             <Link to="/contact" className="secondary-btn">Get in touch</Link>
           </div>
         </div>
@@ -147,4 +177,3 @@ export default function About() {
     </div>
   );
 }
-

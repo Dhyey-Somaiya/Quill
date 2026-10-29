@@ -15,7 +15,7 @@ import {
 import { postsApi, commentsApi, bookmarksApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import DOMPurify from "dompurify";
-import { DetailSkeleton } from "../components/SkeletonLoader";
+import { DetailSkeleton, CommentsSkeleton } from "../components/SkeletonLoader";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -158,7 +158,7 @@ export default function PostDetail() {
     return (
       <div className="reading-shell">
         <div className="error-banner">{error || "Story not found."}</div>
-        <Link className="back-link" to="/">
+        <Link className="back-link" to="/home">
           <ArrowLeft size={16} /> Back to stories
         </Link>
       </div>
@@ -251,7 +251,7 @@ export default function PostDetail() {
     setDeleting(true);
     try {
       await postsApi.delete(id);
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete story.");
     } finally {
@@ -335,7 +335,7 @@ export default function PostDetail() {
       <div style={{ position: "fixed", top: 0, left: 0, height: 4, background: "var(--accent)", width: `${readingProgress}%`, zIndex: 1000, transition: "width 0.1s ease-out" }} />
       
       <div className="top-nav-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Link className="back-link" to="/" style={{ marginBottom: 0 }}>
+        <Link className="back-link" to="/home" style={{ marginBottom: 0 }}>
           <ArrowLeft size={16} /> Back to stories
         </Link>
 
@@ -512,7 +512,7 @@ export default function PostDetail() {
 
             {/* Comments List */}
             {commentsLoading ? (
-              <div className="loading-state">Loading comments...</div>
+              <CommentsSkeleton />
             ) : comments.length === 0 ? (
               <p className="muted" style={{ fontStyle: "italic" }}>
                 No comments yet. Be the first to start the conversation!

@@ -4,6 +4,7 @@ import { Bookmark, ArrowLeft } from "lucide-react";
 import { bookmarksApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import PostCard from "../components/PostCard";
+import { PostCardSkeleton } from "../components/SkeletonLoader";
 
 export default function Bookmarks() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -42,10 +43,22 @@ export default function Bookmarks() {
     setBookmarks((prev) => prev.filter((post) => post._id !== postId));
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
-      <div className="page-shell loading-state">
-        Fetching bookmarks<span>...</span>
+      <div className="page-shell bookmarks-page">
+        <div className="section-heading" style={{ marginTop: 40 }}>
+          <div>
+            <div className="skeleton" style={{ width: 60, height: 16, marginBottom: 12 }} />
+            <div className="skeleton" style={{ width: 220, height: 38 }} />
+          </div>
+          <div className="skeleton" style={{ width: 90, height: 16 }} />
+        </div>
+        <div className="post-grid" style={{ marginTop: 24 }}>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </div>
       </div>
     );
   }
@@ -76,7 +89,7 @@ export default function Bookmarks() {
           <Bookmark size={48} style={{ opacity: 0.3, marginBottom: 16 }} />
           <h3>No bookmarked stories yet</h3>
           <p>Explore stories on the home page and save what moves you.</p>
-          <Link to="/" className="primary-btn" style={{ marginTop: 20 }}>
+          <Link to="/home" className="primary-btn" style={{ marginTop: 20 }}>
             Explore Stories
           </Link>
         </div>

@@ -19,6 +19,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { AdminDashboardSkeleton } from "../components/SkeletonLoader";
 import {
   adminApi,
   usersApi,
@@ -246,7 +247,7 @@ export default function Admin() {
   };
 
   if (loading || authLoading) {
-    return <div className="reading-shell loading-state">Loading admin dashboard<span>...</span></div>;
+    return <AdminDashboardSkeleton />;
   }
 
   if (error) {
@@ -287,7 +288,7 @@ export default function Admin() {
             </button>
           ))}
         </nav>
-        <Link to="/" className="admin-home-link">← Back to Site</Link>
+        <Link to="/home" className="admin-home-link">← Back to Site</Link>
       </aside>
 
       {/* MAIN CONTENT */}

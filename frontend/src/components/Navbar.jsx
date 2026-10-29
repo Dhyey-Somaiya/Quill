@@ -46,27 +46,27 @@ export default function Navbar() {
 
   const handleSectionLink = (hash) => {
     closeMobileMenu();
-    if (location.pathname === "/") {
+    if (location.pathname === "/home") {
       // Already on home, scroll to section
       const el = document.getElementById(hash);
       if (el) {
         el.scrollIntoView({ behavior: "smooth" });
+        return;
       }
-    } else {
-      navigate(`/#${hash}`);
     }
+    navigate(`/home#${hash}`);
   };
 
   return (
     <header className="navbar">
       <div className="nav-inner">
-        <Link className="brand" to="/">
+        <Link className="brand" to={isAuthenticated ? "/home" : "/"}>
           quill<span>.</span>
         </Link>
 
         {/* ── Desktop Navigation ── */}
         <nav className="desktop-nav">
-          <NavLink to="/" end>
+          <NavLink to="/home">
             Home
           </NavLink>
           {isAuthenticated && (
@@ -79,7 +79,7 @@ export default function Navbar() {
             <NavLink to="/admin">Admin</NavLink>
           )}
           <a
-            href="/#latest"
+            href="/home#latest"
             onClick={(e) => {
               e.preventDefault();
               handleSectionLink("latest");
@@ -88,7 +88,7 @@ export default function Navbar() {
             Latest
           </a>
           <a
-            href="/#topics"
+            href="/home#topics"
             onClick={(e) => {
               e.preventDefault();
               handleSectionLink("topics");
@@ -104,7 +104,7 @@ export default function Navbar() {
           <button
             className="icon-btn"
             aria-label="Search"
-            onClick={() => navigate("/#search")}
+            onClick={() => navigate("/home#search")}
           >
             <Search size={18} />
           </button>
@@ -165,12 +165,12 @@ export default function Navbar() {
           <div className="mobile-nav-inner">
             {/* Primary links */}
             <div className="mobile-nav-section">
-              <NavLink to="/" end onClick={closeMobileMenu}>
+              <NavLink to="/home" onClick={closeMobileMenu}>
                 <Home size={16} />
                 Home
               </NavLink>
               <a
-                href="/#latest"
+                href="/home#latest"
                 onClick={(e) => {
                   e.preventDefault();
                   handleSectionLink("latest");
@@ -180,7 +180,7 @@ export default function Navbar() {
                 Latest
               </a>
               <a
-                href="/#topics"
+                href="/home#topics"
                 onClick={(e) => {
                   e.preventDefault();
                   handleSectionLink("topics");

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Edit, Trash2, Send, FilePen } from "lucide-react";
 import { postsApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { DraftCardSkeleton } from "../components/SkeletonLoader";
 
 export default function Drafts() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -35,7 +36,7 @@ export default function Drafts() {
     };
 
     fetchDrafts();
-  }, [user, isAuthenticated, authLoading]);
+  }, [user, isAuthenticated, authLoading, navigate]);
 
   const handlePublish = async (draftId) => {
     if (publishing) return;
@@ -67,15 +68,22 @@ export default function Drafts() {
 
   if (authLoading || loading) {
     return (
-      <div className="reading-shell loading-state">
-        Loading drafts<span>...</span>
+      <div className="drafts-page">
+        <div className="skeleton" style={{ width: 110, height: 16, marginBottom: 40 }} />
+        <div className="skeleton" style={{ width: 180, height: 42, marginBottom: 12 }} />
+        <div className="skeleton" style={{ width: 260, height: 14, marginBottom: 40 }} />
+        <div className="drafts-list">
+          <DraftCardSkeleton />
+          <DraftCardSkeleton />
+          <DraftCardSkeleton />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="drafts-page">
-      <Link className="back-link" to="/">
+      <Link className="back-link" to="/home">
         ← Back to stories
       </Link>
 

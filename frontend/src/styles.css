@@ -3296,4 +3296,248 @@ button {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────────────────── */
+/* ABOUT PAGE ENHANCEMENTS (Landing Hero CTAs & User Welcome)                  */
+/* ──────────────────────────────────────────────────────────────────────────── */
+.about-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.about-hero-btn {
+  padding: 13px 24px;
+  font-size: 14px;
+}
+.about-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 13px;
+  margin-bottom: 24px;
+  color: var(--muted);
+}
+.about-user-pill strong {
+  color: var(--text);
+}
+.about-user-pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.about-user-pill-link:hover {
+  color: var(--accent-dark);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+/* HOME PAGE PREVIEW GATE (Sign In to View More)                               */
+/* ──────────────────────────────────────────────────────────────────────────── */
+.signin-wall-wrapper {
+  margin-top: 48px;
+  position: relative;
+}
+.signin-wall-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 56px 40px 48px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.signin-wall-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+}
+.signin-wall-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+.signin-wall-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.signin-wall-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.1;
+  font-weight: 400;
+  margin: 0 0 14px;
+  color: var(--text);
+}
+.signin-wall-copy {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: 520px;
+  margin: 0 0 32px;
+}
+.signin-wall-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.signin-wall-primary-btn {
+  padding: 13px 28px;
+  font-size: 14px;
+}
+.signin-wall-secondary-btn {
+  padding: 13px 26px;
+  font-size: 14px;
+}
+.signin-wall-note {
+  margin: 22px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── */
+/* FLOATING SIGN-IN PROMPT (Scroll Triggered for Guests)                       */
+/* ──────────────────────────────────────────────────────────────────────────── */
+.floating-signin-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: min(640px, calc(100vw - 32px));
+  animation: floatIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+.floating-signin-inner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  border-radius: 999px;
+  padding: 10px 14px 10px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  backdrop-filter: blur(14px);
+}
+:root[data-theme="dark"] .floating-signin-inner {
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+.floating-signin-text {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.floating-signin-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.floating-signin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.floating-signin-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+.floating-signin-close {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.floating-signin-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .signin-wall-card {
+    padding: 38px 20px 32px;
+  }
+  .floating-signin-inner {
+    border-radius: 14px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .floating-signin-text {
+    white-space: normal;
+    font-size: 12px;
+  }
+  .floating-signin-actions {
+    justify-content: stretch;
+    width: 100%;
+  }
+  .floating-signin-actions a {
+    flex: 1;
+    text-align: center;
+  }
+  .floating-signin-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+
 

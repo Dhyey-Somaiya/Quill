@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { usersApi, postsApi } from "../services/api";
+import { ProfileSkeleton } from "../components/SkeletonLoader";
 
 export default function Profile() {
   const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
@@ -84,7 +85,7 @@ export default function Profile() {
   };
 
   if (loading || authLoading) {
-    return <div className="reading-shell loading-state">Loading profile<span>...</span></div>;
+    return <ProfileSkeleton />;
   }
 
   if (error && !profile) {
