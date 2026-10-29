@@ -1,374 +1,338 @@
-# Quill ✒️
+# Quill ✒️ — Modern Blogging & Publishing Platform
 
-A modern, production-ready, full-stack blogging and publishing platform built with **React 19**, **Vite**, **Node.js**, **Express 5**, and **MongoDB**.
+**Quill** is a full-stack blogging and publishing platform built with the MERN stack. It provides a modern space for writers to create, manage, publish, and discover content, with authentication, social engagement, personalized reading features, and administrative controls.
 
-Quill provides a rich, elegant publishing experience for writers and readers, featuring draft management, markdown/rich content editing, article categorization, social interactions (likes, bookmarks, comments, follow/unfollow), light/dark mode, transactional emails via Resend, robust authentication (Email/Password with email verification and Google OAuth 2.0), and a comprehensive admin management dashboard.
+The application is deployed using **Vercel**, **Render**, and **MongoDB Atlas**, with a React frontend, an Express REST API, and a MongoDB database.
 
----
+## 🌐 Live Application
 
-## 🌟 Key Features
+| Component | Deployment |
+|---|---|
+| **Live Website** | [Quill — Production](https://quill-ten-sable.vercel.app/) |
+| **Backend API** | [Quill Backend on Render](https://quill-backend-r3uq.onrender.com/) |
+| **Source Code** | [GitHub Repository](https://github.com/Dhyey-Somaiya/Quill) |
+| **Database** | MongoDB Atlas |
 
-### 🔐 Authentication & Security
-- **Dual Authentication Methods**:
-  - **Email & Password**: Secure registration with mandatory email verification via Resend.
-  - **Google OAuth 2.0**: One-tap and popup Google Sign-In powered by Google Identity Services (GIS) on the frontend and cryptographically verified on the backend with `google-auth-library`.
-- **Intelligent Account Linking**: If a user previously registered with email/password and signs in using Google with the same email, the account is automatically linked and verified.
-- **Google-Only Account Safety**: Google-only users have no password hashes stored, preventing unauthorized password logins or invalid password reset emails.
-- **Unified JWT Session Management**: Both authentication providers issue the exact same Quill JWT token payload, ensuring consistent authorization across the platform.
-- **Secure Password Hashing**: Passwords hashed with `bcryptjs` (salt rounds: 10).
-- **Transactional Verification & Password Resets**:
-  - Verification links expire in 24 hours.
-  - Password reset links expire in 15 minutes.
-  - Reset tokens and verification tokens are stored as SHA-256 hashes in MongoDB and invalidated immediately upon use (single-use tokens).
-- **Brute-Force & Abuse Protection**: Rate limiting with `express-rate-limit` on sensitive authentication and mutation endpoints.
+The production frontend communicates with the backend through REST API endpoints. MongoDB Atlas provides persistent database storage for application data.
 
-### 📝 Content & Publishing
-- **Rich Article Editor**: Create, edit, draft, and publish articles with cover images, categories, and tags.
-- **Draft Management**: Save drafts privately and publish when ready.
-- **Category & Tag Organization**: Structured content discovery with filtered browsing by category, tag, or author.
-- **Full-Text Search & Pagination**: Search articles by keywords with server-side pagination support.
+## ✨ Key Features
 
-### 💬 Social & Engagement
-- **Likes & Bookmarks**: Toggle likes on articles and save posts to personal bookmarks.
-- **Commenting System**: Nested comments on published articles with moderation capabilities.
-- **User Profiles & Following**: Public profile pages with follower/following mechanics.
+### Authentication & Account Security
+- Email and password registration and login.
+- Email verification using Resend transactional emails.
+- Forgot-password and password-reset workflows.
+- Google OAuth 2.0 integration using Google Identity Services.
+- JWT-based authentication and protected routes.
+- Password hashing using bcryptjs.
+- Single-use, time-limited email verification and password-reset tokens.
+- Rate limiting for sensitive authentication and API operations.
+- Account linking for compatible email/password and Google authentication flows.
 
-### 🛡️ Admin Dashboard
-- **Platform Analytics**: Dashboard metrics for users, articles, categories, and comments.
-- **User Management**: View user accounts and toggle active/inactive account status.
-- **Taxonomy Control**: Create, update, and delete categories and tags.
-- **Comment Moderation**: Approve or delete user comments.
+### Content Creation & Publishing
+- Create, edit, save, and publish blog posts.
+- Save unpublished content as drafts.
+- Organize articles using categories and tags.
+- Browse articles with pagination and search.
+- View individual articles and author profiles.
 
-### 🎨 UI & Design
-- **Theme Toggle**: Seamless switching between Dark Mode and Light Mode.
-- **Responsive Layout**: Mobile-friendly navigation drawer and responsive grid layouts.
-- **Skeleton Loaders**: Polished skeleton loading states during async fetches.
+### Social & Community Features
+- Like and unlike articles.
+- Bookmark articles for later reading.
+- Comment on articles and participate in discussions.
+- Follow and unfollow other users.
+- View public user profiles.
 
----
+### Administration
+- Dedicated administrative dashboard.
+- Platform statistics and content overview.
+- User management and account-status controls.
+- Category and tag management.
+- Comment moderation.
 
-## 🛠️ Tech Stack
+### User Experience
+- Responsive layouts for desktop and mobile.
+- Light and dark themes.
+- Search and content-discovery interfaces.
+- Loading skeletons and asynchronous data handling.
+- Protected pages and role-based access controls.
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Frontend** | React 19, Vite 7, React Router DOM 7, Axios, Lucide React, DOMPurify, Google Identity Services |
-| **Backend** | Node.js, Express 5, MongoDB, Mongoose 9, `google-auth-library`, `resend`, `jsonwebtoken`, `bcryptjs`, `express-rate-limit`, `sanitize-html` |
-| **Email Delivery** | [Resend](https://resend.com) Transactional Email API |
-| **Database** | MongoDB (Local or MongoDB Atlas) |
+## 🛠️ Technology Stack
 
----
+| Layer | Technologies |
+|---|---|
+| Frontend | React 19, Vite 7, React Router DOM 7 |
+| API communication | Axios, REST APIs |
+| Backend | Node.js, Express 5 |
+| Database | MongoDB, Mongoose 9, MongoDB Atlas |
+| Authentication | JWT, bcryptjs, Google Identity Services, google-auth-library |
+| Email delivery | Resend |
+| Security | express-rate-limit, sanitize-html, DOMPurify |
+| Frontend hosting | Vercel |
+| Backend hosting | Render |
+| Version control | Git, GitHub |
 
-## 📁 Repository Structure
+## 🏗️ System Architecture
+
+```text
+                         ┌───────────────────────┐
+                         │        User           │
+                         └───────────┬───────────┘
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │    React Frontend     │
+                         │        Vercel         │
+                         └───────────┬───────────┘
+                                     │
+                              HTTPS / REST API
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │   Express Backend     │
+                         │        Render         │
+                         └───────────┬───────────┘
+                                     │
+                       ┌─────────────┴─────────────┐
+                       │                           │
+                       ▼                           ▼
+            ┌────────────────────┐     ┌────────────────────┐
+            │   MongoDB Atlas    │     │   Resend Email API  │
+            │ Persistent Storage │     │ Transactional Email │
+            └────────────────────┘     └────────────────────┘
+
+                       Google Identity Services
+                          supports sign-in
+```
+
+### Application Flow
+
+1. Users access the React application through the Vercel deployment.
+2. The frontend sends HTTP requests to the Express backend hosted on Render.
+3. The backend validates requests, enforces authorization, and executes application logic.
+4. Mongoose communicates with MongoDB Atlas to store and retrieve application data.
+5. Resend handles transactional emails, including verification and password-reset messages.
+6. Google Identity Services provides Google sign-in, with credential verification performed by the backend.
+
+## 🚀 Production Deployment
+
+### Frontend — Vercel
+
+The React application is hosted on Vercel.
+
+**Production URL:** https://quill-ten-sable.vercel.app/
+
+The frontend uses Vite environment variables to configure its API endpoint and Google authentication client ID.
+
+### Backend — Render
+
+The Express API is hosted as a Render web service.
+
+**Production URL:** https://quill-backend-r3uq.onrender.com/
+
+The backend provides versioned REST endpoints under `/api/v1` and connects to MongoDB Atlas using the `MONGO_URI` environment variable.
+
+### Database — MongoDB Atlas
+
+MongoDB Atlas provides the production database.
+
+Application collections include:
+
+- `users`
+- `posts`
+- `categories`
+- `comments`
+- `tags`
+- `emailverificationtokens`
+- `passwordresettokens`
+
+The database stores application records, including users, content, and related interactions. Production database access is configured separately from the local development database.
+
+### Production Configuration
+
+Configure the following environment variables through the appropriate hosting dashboards. Never commit production secrets to GitHub.
+
+**Backend — Render**
+
+| Variable | Purpose |
+|---|---|
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `JWT_SECRET` | Secret used for JWT signing |
+| `FRONTEND_URL` | Deployed frontend origin used for CORS and email links |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID used by the backend |
+| `RESEND_API_KEY` | Resend API credential |
+| `EMAIL_FROM` | Transactional email sender |
+| `NODE_ENV` | Production environment configuration |
+
+**Frontend — Vercel**
+
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | Backend API base URL |
+| `VITE_GOOGLE_CLIENT_ID` | Google Identity Services client ID |
+
+For the production deployment, the frontend API URL should point to:
+
+`https://quill-backend-r3uq.onrender.com/api/v1`
+
+The frontend and backend Google client IDs must match. The production frontend origin must also be registered in the relevant Google Cloud OAuth client configuration.
+
+## 💻 Local Development
+
+### Prerequisites
+
+- Node.js and npm.
+- A local MongoDB instance or MongoDB Atlas database.
+- A Google Cloud project for Google authentication.
+- A Resend account for transactional email testing.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Dhyey-Somaiya/Quill.git
+cd Quill
+```
+
+### 2. Configure the backend
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file using `.env.example` as a reference.
+
+Configure the required variables, including:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/QuillDB
+JWT_SECRET=replace_with_a_secure_random_secret
+FRONTEND_URL=http://localhost:5173
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM=onboarding@resend.dev
+```
+
+Use your own credentials. Never commit the `.env` file.
+
+Start the backend in development mode:
+
+```bash
+npm run dev
+```
+
+The backend will normally be available at `http://localhost:5000`.
+
+### 3. Configure the frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file based on `frontend/.env.example`.
+
+Configure:
+
+```env
+VITE_API_URL=http://localhost:5000/api/v1
+VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Open the local application at `http://localhost:5173`.
+
+### 4. Configure external services
+
+For Google authentication, configure the appropriate authorized JavaScript origins in Google Cloud Console and use the same OAuth client ID in the frontend and backend.
+
+For email functionality, configure a valid Resend API key and sender address. The available recipient restrictions depend on your Resend account and sender-domain verification status.
+
+For database connectivity, ensure the selected MongoDB database is accessible and that the connection string references the intended database.
+
+## 📡 API Overview
+
+All versioned API routes use the `/api/v1` prefix.
+
+| Module | Base endpoint | Purpose |
+|---|---|---|
+| Authentication | `/api/v1/auth` | Registration, login, Google sign-in, email verification, password reset |
+| Posts | `/api/v1/posts` | Article retrieval, creation, editing, deletion, likes |
+| Users | `/api/v1/users` | Profiles, bookmarks, following, account management |
+| Categories | `/api/v1/categories` | Category retrieval and administration |
+| Tags | `/api/v1/tags` | Tag retrieval and management |
+| Comments | `/api/v1/comments` | Article comments and replies |
+| Administration | `/api/v1/admin` | Administrative dashboard and platform operations |
+| Health | `/api/v1/health` | Backend health endpoint |
+
+Individual endpoints have different authentication and authorization requirements. Refer to the backend route and middleware implementations for the exact access rules.
+
+## 🔐 Security Practices
+
+- Keep API keys, database credentials, and JWT secrets in environment variables.
+- Use HTTPS for production traffic.
+- Hash passwords before storing them.
+- Verify Google credentials on the backend.
+- Enforce authentication and authorization on protected operations.
+- Use rate limiting for sensitive endpoints.
+- Validate and sanitize user-controlled content.
+- Use expiring, single-use tokens for verification and password-reset workflows.
+- Restrict database access according to the deployment's security requirements.
+- Rotate credentials immediately if they are accidentally exposed.
+- Avoid publishing real user data, passwords, tokens, or production configuration files.
+
+## 🧪 Testing & Verification
+
+Before considering a release production-ready, verify the following workflows against the deployed application:
+
+- Homepage, posts, and categories load successfully.
+- Individual article pages and search work.
+- Registration and email verification work.
+- Email/password login and protected routes work.
+- Google sign-in succeeds using the production domain.
+- Password-reset emails and reset links work.
+- Post creation, editing, drafts, comments, likes, and bookmarks work.
+- User-following features work.
+- Administrative functions enforce the correct permissions.
+- Production API requests succeed without CORS or server errors.
+
+## 📂 Repository Structure
 
 ```text
 Quill/
 ├── backend/
-│   ├── config/               # Database connection setup (db.js)
-│   ├── controllers/          # Business logic handlers (auth, post, user, comment, etc.)
-│   ├── middleware/           # Auth JWT, Role verification, and Rate limiting middleware
-│   ├── models/               # Mongoose database schemas:
-│   │   ├── Category.js
-│   │   ├── Comment.js
-│   │   ├── EmailVerificationToken.js
-│   │   ├── PasswordResetToken.js
-│   │   ├── Post.js
-│   │   ├── Tag.js
-│   │   └── User.js
-│   ├── routes/               # Express API routes (auth, posts, users, comments, admin, etc.)
-│   ├── scripts/              # Seed & test scripts:
-│   │   ├── seedAdmin.js      # Seeds default administrator account
-│   │   ├── testAuthFlows.js  # Automated authentication integration test
-│   │   └── testResend.js     # Standalone Resend email test script
-│   ├── services/             # Email delivery service via Resend (emailService.js)
-│   ├── utils/                # Error handling and environment validation (validateEnv.js)
-│   ├── server.js             # Express app entry point
-│   ├── .env.example          # Backend environment variables blueprint
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   ├── services/
+│   ├── utils/
+│   ├── server.js
+│   ├── .env.example
 │   └── package.json
-│
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # UI components (Navbar, PostCard, RichEditor, SkeletonLoader, ProtectedRoute)
-│   │   ├── context/          # React Context (AuthContext)
-│   │   ├── pages/            # View pages:
-│   │   │   ├── Admin.jsx
-│   │   │   ├── Bookmarks.jsx
-│   │   │   ├── Drafts.jsx
-│   │   │   ├── ForgotPassword.jsx
-│   │   │   ├── Home.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── PostDetail.jsx
-│   │   │   ├── Profile.jsx
-│   │   │   ├── PublicProfile.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── ResendVerification.jsx
-│   │   │   ├── ResetPassword.jsx
-│   │   │   ├── VerifyEmail.jsx
-│   │   │   └── Write.jsx
-│   │   ├── services/         # Axios API client setup (api.js)
-│   │   ├── App.jsx           # App layout & routing definitions
-│   │   ├── main.jsx          # React DOM entry point
-│   │   └── styles.css        # Core stylesheet & design tokens
-│   ├── index.html            # Vite HTML template
-│   ├── .env.example          # Frontend environment variables blueprint
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── .env.example
+│   ├── index.html
 │   └── package.json
-│
 └── README.md
 ```
 
----
-
-## 🚀 How to Run the Project
-
-### Prerequisites
-Make sure you have installed on your machine:
-- **Node.js**: v18.0.0 or higher recommended ([Download Node.js](https://nodejs.org/))
-- **MongoDB**: A running local MongoDB instance (`mongodb://localhost:27017`) or a free [MongoDB Atlas](https://www.mongodb.com/atlas) connection string
-- **Resend Account**: Free account at [resend.com](https://resend.com) for sending emails
-- **Google Cloud Console Account**: For configuring Google OAuth 2.0 (see guide below)
-
----
-
-### Step 1: Backend Setup
-
-1. **Navigate to the `backend` folder**:
-   ```bash
-   cd backend
-   ```
-
-2. **Install backend dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Copy `.env.example` to create your `.env` file:
-   ```bash
-   cp .env.example .env
-   ```
-   *(On Windows Command Prompt / PowerShell, use `copy .env.example .env`)*
-
-   Fill in your configuration values in `backend/.env`:
-   ```env
-   # Database & Server
-   PORT=5000
-   MONGO_URI=mongodb://localhost:27017/QuilDB
-
-   # Authentication Secret (min 32 characters)
-   JWT_SECRET=your_super_secret_jwt_key_at_least_32_characters_long
-
-   # Google OAuth (Must match frontend Client ID)
-   GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-
-   # Resend Transactional Email
-   RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
-   EMAIL_FROM=onboarding@resend.dev
-
-   # Frontend URL (Used for generating email verification & password reset links)
-   FRONTEND_URL=http://localhost:5173
-   ```
-
-   > **Note on `EMAIL_FROM`**: During development, keep `EMAIL_FROM=onboarding@resend.dev`. Resend allows testing without configuring a custom domain by delivering emails to the email address registered with your Resend account.
-
-4. **Seed the Admin Account** *(Optional)*:
-   Create a pre-configured administrator account to test admin features:
-   ```bash
-   npm run seed:admin
-   ```
-   - **Email**: `admin-test@quill.com`
-   - **Password**: `Admin@123`
-   - **Role**: `ADMIN`
-
-5. **Start the Backend Server**:
-   ```bash
-   # Development mode (with nodemon auto-reload)
-   npm run dev
-
-   # Production mode
-   npm start
-   ```
-   The backend API will start on `http://localhost:5000`.
-
----
-
-### Step 2: Frontend Setup
-
-1. **Open a new terminal and navigate to the `frontend` folder**:
-   ```bash
-   cd frontend
-   ```
-
-2. **Install frontend dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Copy `.env.example` to create your `.env` file:
-   ```bash
-   cp .env.example .env
-   ```
-   *(On Windows Command Prompt / PowerShell, use `copy .env.example .env`)*
-
-   Fill in your configuration values in `frontend/.env`:
-   ```env
-   # Backend API Endpoint
-   VITE_API_URL=http://localhost:5000/api/v1
-
-   # Google OAuth Client ID (Must match backend GOOGLE_CLIENT_ID)
-   VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-   ```
-
-4. **Start the Frontend Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open your browser and visit:
-   ```
-   http://localhost:5173
-   ```
-
----
-
-## 🔑 Google OAuth 2.0 Integration & Setup Guide
-
-Quill supports one-click **Google Sign-In** seamlessly integrated alongside standard email/password authentication.
-
-### How Google Authentication Works in Quill
-1. **Frontend Initiation**:
-   - The frontend loads Google's official client library (`https://accounts.google.com/gsi/client`).
-   - The user clicks the **"Continue with Google"** button rendered by Google Identity Services (`window.google.accounts.id.renderButton`).
-   - Google validates the user's login and returns a cryptographically signed **ID Token** (JWT credential).
-2. **Server-Side Verification**:
-   - The frontend sends the credential to `POST /api/v1/auth/google`.
-   - The backend validates the token using `google-auth-library`'s `OAuth2Client.verifyIdToken()` against Google's public keys and verifies that the audience matches `GOOGLE_CLIENT_ID`.
-   - The backend directly extracts verified claims from Google's payload (`sub`, `email`, `name`, `email_verified`). The backend **never trusts raw, arbitrary email input** from the client.
-3. **User Linking & Creation**:
-   - **Existing User**: If an account with the Google ID or matching email already exists, the accounts are linked and the email is marked verified.
-   - **New User**: A new user profile is created with `emailVerified: true` and `passwordHash: null`.
-4. **Unified Session Token**:
-   - The backend issues a standard Quill JWT token (`{ id, role }`). Both Google users and email/password users share the exact same authorization middleware and session lifecycles.
-
----
-
-### Step-by-Step Google Cloud Console Setup
-
-Follow these steps to obtain your Google OAuth Client ID:
-
-1. **Go to Google Cloud Console**:
-   - Visit [https://console.cloud.google.com/](https://console.cloud.google.com/) and log in.
-
-2. **Create a Project**:
-   - Click the project dropdown at the top of the page.
-   - Click **New Project**.
-   - Name your project (e.g., `Quill-Blog`) and click **Create**.
-
-3. **Configure the OAuth Consent Screen**:
-   - In the left sidebar, navigate to **APIs & Services** > **OAuth consent screen**.
-   - Select **External** and click **Create**.
-   - Fill in the required fields:
-     - **App name**: `Quill`
-     - **User support email**: Select your email.
-     - **Developer contact information**: Enter your email.
-   - Click **Save and Continue**.
-   - **Scopes**: Standard default scopes (`openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`) are automatically included. Click **Save and Continue**.
-   - **Test Users**: While in "Testing" mode, add your personal Google email address as a test user so you can log in during development.
-   - Click **Save and Continue** and return to dashboard.
-
-4. **Create OAuth 2.0 Client ID Credentials**:
-   - In the left sidebar, click **Credentials**.
-   - Click **+ Create Credentials** at the top and select **OAuth client ID**.
-   - Set **Application type** to **Web application**.
-   - Set **Name** to `Quill Web Client`.
-   - Under **Authorized JavaScript origins**, click **+ Add URI** and add:
-     - `http://localhost:5173` *(Vite dev server)*
-     - `http://localhost:5000` *(Express backend server)*
-     - *(Add your production domain if deploying, e.g., `https://quill.yourdomain.com`)*
-   - *(Note: Authorized redirect URIs are not required because Google Identity Services uses the popup/one-tap ID token flow).*
-   - Click **Create**.
-
-5. **Copy Your Client ID**:
-   - A dialog will show your **Client ID** (format: `xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com`).
-   - Copy this Client ID. *(The Client Secret is not required for Google Identity Services frontend ID token verification).*
-
-6. **Add the Client ID to Your Environment Files**:
-   - In `backend/.env`:
-     ```env
-     GOOGLE_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
-     ```
-   - In `frontend/.env`:
-     ```env
-     VITE_GOOGLE_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
-     ```
-   - Restart both backend and frontend servers. The "Continue with Google" button on `/login` is now active!
-
----
-
-## ✉️ Transactional Email Verification & Password Reset (Resend)
-
-Quill uses [Resend](https://resend.com) for reliable, transactional email delivery.
-
-### Development Testing Mode
-- Resend provides a sandbox sender: `onboarding@resend.dev`.
-- In test mode, Resend permits sending emails **only to the email address you signed up with** on Resend.
-- For local testing:
-  1. Set `RESEND_API_KEY` in `backend/.env`.
-  2. Keep `EMAIL_FROM=onboarding@resend.dev`.
-  3. Register with your Resend account email address to receive real verification emails.
-  4. Test sending an email directly with the included script:
-     ```bash
-     cd backend
-     node scripts/testResend.js your-email@example.com
-     ```
-
-### Automated Flow Verification
-Run the integrated end-to-end authentication test suite:
-```bash
-cd backend
-node scripts/testAuthFlows.js
-```
-This tests:
-- Email/password user registration
-- Email verification token consumption
-- Password reset token generation & rotation
-- Prevention of resets on Google-only accounts
-
----
-
-## 📡 API Reference Overview
-
-| Module | Endpoint | Method | Access | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| **Auth** | `/api/v1/auth/register` | `POST` | Public | Register with email/password (triggers verification email) |
-| **Auth** | `/api/v1/auth/verify-email?token=` | `GET` | Public | Verify email address using secure token |
-| **Auth** | `/api/v1/auth/resend-verification` | `POST` | Public | Resend email verification link |
-| **Auth** | `/api/v1/auth/login` | `POST` | Public | Authenticate with email/password; returns JWT |
-| **Auth** | `/api/v1/auth/google` | `POST` | Public | Authenticate using Google credential; returns JWT |
-| **Auth** | `/api/v1/auth/forgot-password` | `POST` | Public | Request password reset email |
-| **Auth** | `/api/v1/auth/reset-password` | `POST` | Public | Reset password using single-use token |
-| **Auth** | `/api/v1/auth/change-password` | `PATCH` | Authenticated | Change current password |
-| **Posts** | `/api/v1/posts` | `GET` | Public / Optional Auth | List published posts with pagination, category, tag, & search filters |
-| **Posts** | `/api/v1/posts/:id` | `GET` | Public / Optional Auth | Fetch single post details |
-| **Posts** | `/api/v1/posts` | `POST` | Authenticated | Create a new post or draft |
-| **Posts** | `/api/v1/posts/:id` | `PUT` | Author / Admin | Update post details or publish status |
-| **Posts** | `/api/v1/posts/:id` | `DELETE` | Author / Admin | Delete a post |
-| **Posts** | `/api/v1/posts/:id/like` | `POST` / `DELETE` | Authenticated | Like or unlike a post |
-| **Users** | `/api/v1/users/me` | `GET` / `PATCH` | Authenticated | Fetch / update authenticated user profile |
-| **Users** | `/api/v1/users/me/bookmarks` | `GET` | Authenticated | Fetch current user's bookmarked posts |
-| **Users** | `/api/v1/users/:id` | `GET` | Public | Fetch user public profile |
-| **Users** | `/api/v1/users/:id/follow` | `POST` / `DELETE` | Authenticated | Follow or unfollow a user |
-| **Users** | `/api/v1/users/bookmarks/:id` | `POST` / `DELETE` | Authenticated | Add or remove post bookmark |
-| **Users** | `/api/v1/users` | `GET` | Admin | List all registered users |
-| **Users** | `/api/v1/users/:id/status` | `PATCH` | Admin | Toggle user active/inactive account status |
-| **Categories** | `/api/v1/categories` | `GET` | Public | List all categories |
-| **Categories** | `/api/v1/categories` | `POST` / `PUT` / `DELETE` | Admin | Create, update, or delete categories |
-| **Tags** | `/api/v1/tags` | `GET` | Public | List all tags |
-| **Tags** | `/api/v1/tags/with-counts` | `GET` | Public | List tags with post usage counts |
-| **Tags** | `/api/v1/tags` | `POST` | Authenticated | Create a new tag |
-| **Comments** | `/api/v1/comments?postId=` | `GET` | Public | Get approved comments for a post |
-| **Comments** | `/api/v1/comments` | `POST` | Authenticated | Post a comment or reply |
-| **Admin** | `/api/v1/admin/dashboard` | `GET` | Admin | Platform overview counts (users, posts, drafts, comments) |
-
----
-
 ## 📄 License
 
-This project is open-source and available under the [MIT License](LICENSE).
+Quill is distributed under the MIT License, as specified in the repository's license file.
