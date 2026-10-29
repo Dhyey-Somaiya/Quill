@@ -11,7 +11,7 @@ The application is deployed using **Vercel**, **Render**, and **MongoDB Atlas**,
 | **Live Website** | [Quill — Production](https://quill-ten-sable.vercel.app/) |
 | **Backend API** | [Quill Backend on Render](https://quill-backend-r3uq.onrender.com/) |
 | **Source Code** | [GitHub Repository](https://github.com/Dhyey-Somaiya/Quill) |
-| **Database** | MongoDB Atlas |
+| **Database** | .[MongoDB Atlas](https://cloud.mongodb.com/v2/6aab6f3c75e39b8a37aa34a3#/clusters/detail/QuillCluster) |
 
 The production frontend communicates with the backend through REST API endpoints. MongoDB Atlas provides persistent database storage for application data.
 
