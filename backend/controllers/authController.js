@@ -401,8 +401,8 @@ const forgotPassword = async (req, res) => {
       return res.status(200).json({ message: successMsg });
     }
 
-    // Google-only accounts have no password to reset
-    if (!user.passwordHash) {
+    // Google-only accounts (googleId set, no passwordHash) cannot reset a password
+    if (user.googleId && !user.passwordHash) {
       return res.status(200).json({
         message:
           "This account uses Google Sign-In. Please continue with Google.",

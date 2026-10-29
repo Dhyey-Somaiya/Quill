@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { authApi } from "../services/api";
 
@@ -17,8 +17,14 @@ export default function ForgotPassword() {
 
         try {
             const res = await authApi.forgotPassword(email);
-            setMessage(res.data.message);
-            setEmail("");
+            // Google-only accounts come back HTTP 200 with a specific code;
+            // show them as an error so they are never mistaken for a success.
+            if (res.data.code === "GOOGLE_ACCOUNT") {
+                setError(res.data.message);
+            } else {
+                setMessage(res.data.message);
+                setEmail("");
+            }
         } catch (err) {
             setError(
                 err.response?.data?.message ||
