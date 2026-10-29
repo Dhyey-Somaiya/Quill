@@ -15,6 +15,8 @@ import {
   Layers,
   Newspaper,
   Shield,
+  Info,
+  Mail,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -94,6 +96,7 @@ export default function Navbar() {
           >
             Topics
           </a>
+          <NavLink to="/about">About</NavLink>
         </nav>
 
         {/* ── Navigation Actions ── */}
@@ -186,6 +189,14 @@ export default function Navbar() {
                 <Layers size={16} />
                 Topics
               </a>
+              <NavLink to="/about" onClick={closeMobileMenu}>
+                <Info size={16} />
+                About
+              </NavLink>
+              <NavLink to="/contact" onClick={closeMobileMenu}>
+                <Mail size={16} />
+                Contact
+              </NavLink>
             </div>
 
             {isAuthenticated && (

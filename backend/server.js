@@ -13,6 +13,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const tagRoutes = require("./routes/tagRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 const globalErrorHandler = require("./middleware/errorMiddleware");
 const AppError = require("./utils/AppError");
 
@@ -65,6 +66,7 @@ app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/tags", tagRoutes);
 app.use("/api/v1/comments", commentRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/contact", contactRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Quill Backend API is running" });

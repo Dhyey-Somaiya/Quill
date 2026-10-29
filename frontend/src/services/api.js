@@ -97,5 +97,9 @@ export const commentAdminApi = {
   approve: (id, isApproved) => api.put(`/comments/${id}`, { isApproved }),
 };
 
+export const contactApi = {
+  submit: (payload) => api.post("/contact", payload),
+};
+
 export default api;
 
